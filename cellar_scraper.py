@@ -45,15 +45,12 @@ soup = BeautifulSoup(innerHTML, 'html.parser')
 details = []
 
 for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}).findAll('li'))):
-    WebDriverWait(browser, 5000).until(EC.visibility_of_element_located((By.ID, "dk_container__date")))
+    WebDriverWait(browser, 500).until(EC.visibility_of_element_located((By.ID, "dk_container__date")))
     dropdown = browser.find_element_by_id('dk_container__date')
     dropdown.click()
-##    jsExec = (JavascriptExecutor) driver
-##    jsExec.executeScript("document.getElementById('dk_container__date').scrollDown += 100")
-##    scroll_depth = 5000 * day
-##    browser.execute_script("document.getElementById('dk_container__date').scrollDown += " + str(scroll_depth)) 
-##    dropdown.send_keys(Keys.DOWN)
-##    dropdown.send_keys(Keys.ENTER)
+    el = browser.find_elements_by_tag_name("p")
+    for p in range(len(el)):
+        browser.execute_script("arguments[0].style.visibility='hidden'", el[p])
     date_li = browser.find_element_by_id('dk_container__date').find_elements_by_tag_name("li")[day]
     date_li.click()
     
