@@ -1,8 +1,8 @@
 # import libraries
+from __future__ import print_function
 from datetime import datetime
 import pytz
 import logging
-##import csv
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -11,6 +11,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, client, tools
 
 #define location dictionary for show_id
 location_dict = {
@@ -40,9 +43,27 @@ innerHTML = browser.execute_script("return document.body.innerHTML")
 # parse the html using beautiful soup and store in variable 'soup'
 soup = BeautifulSoup(innerHTML, 'html.parser')
 
-# get useful info out of html
-#initialize array that will hold show objects
-details = []
+"""
+Setting up gsheet API
+"""
+# If modifying these scopes, delete the file token.json.
+scopes = 'https://www.googleapis.com/auth/spreadsheets'
+
+# The ID and range of a sample spreadsheet.
+gsheet_id = '1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk'
+gsheet_range = 'A2:D2'
+
+# The file token.json stores the user's access and refresh tokens, and is
+# created automatically when the authorization flow completes for the first
+# time.
+store = file.Storage('token.json')
+creds = store.get()
+if not creds or creds.invalid:
+    flow = client.flow_from_clientsecrets('credentials.json', scopes)
+    creds = tools.run_flow(flow, store)
+service = build('sheets', 'v4', http=creds.authorize(Http()))
+
+values = []
 
 for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}).findAll('li'))):
     WebDriverWait(browser, 500).until(EC.visibility_of_element_located((By.ID, "dk_container__date")))
@@ -77,27 +98,20 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
         location_start = show_time_raw.find('|') + 2
         location = show_time_raw[location_start:-7].lstrip()
         if location in ["MacDougal Street", "Village Underground", "Fat Black Pussycat"]:
-            continue
+            location = location
         else:
             location = "Fat Black Pussycat"
         location_code = location_dict[location]
         showtime_id = location_code + show_timestamp_code
-        for comedian in show.findAll('div', attrs = {'class':'comedian-block-desc'}):               
-            #initialize show object
-            show_comedian_dets = {}
-            show_comedian_dets['show_day_of_week'] = show_day_of_week
-            show_comedian_dets['show_timestamp'] = show_timestamp
-            show_comedian_dets['showtime_id'] = showtime_id
-            show_comedian_dets['location'] = location
+        for comedian in show.findAll('div', attrs = {'class':'comedian-block-desc'}):
             for name in comedian.findAll('span', attrs = {'class':'comedian-block-desc-name'}):
                 raw_name = name.text
                 if 'MC for this show:' in raw_name:
                     comedian_name = raw_name[18:].lstrip().replace("\t", "")
-                    show_comedian_dets['is_mc'] = True
+                    is_mc = True
                 else:
                     comedian_name = raw_name.lstrip().replace("\t", "")
-                    show_comedian_dets['is_mc'] = False
-                show_comedian_dets['comedian_name'] = comedian_name
+                    is_mc = False
             raw_comedian = comedian.text
             start_description = raw_comedian.find(comedian_name) + len(comedian_name)
             raw_comedian_description = raw_comedian[start_description:].lstrip()
@@ -105,10 +119,29 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
                 comedian_description = raw_comedian_description[:-13].lstrip().replace("\t", "")
             else:
                 comedian_description = raw_comedian_description.lstrip().replace("\t", "")
-            show_comedian_dets['comedian_description'] = comedian_description
-            show_comedian_dets["snapshot_timestamp"] = snapshot_timestamp
-            details.append(show_comedian_dets)
 
-##print(details)
-#close browser
+            """
+            Push new row to gsheet
+            """
+            
+            comedian_value = [
+                                showtime_id
+                                , snapshot_timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+                                , show_day_of_week
+                                , show_timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+                                , location
+                                , is_mc
+                                , comedian_name
+                                , comedian_description
+                            ]
+
+            values.append(comedian_value)
+            
+body = {
+    'values': values
+}
+result = service.spreadsheets().values().append(
+    spreadsheetId=gsheet_id, range=gsheet_range,
+    valueInputOption="USER_ENTERED", body=body).execute()
+
 browser.quit()

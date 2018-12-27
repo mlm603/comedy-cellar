@@ -1,2 +1,4 @@
 cellar_scraper.log
 geckodriver.log
+credentials.json
+token.json
