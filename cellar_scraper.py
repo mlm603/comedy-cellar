@@ -15,6 +15,7 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 import pandas as pd
+from dim_shows import dim_shows
 
 
 #define location dictionary for show_id
@@ -72,9 +73,12 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
     WebDriverWait(browser, 500).until(EC.visibility_of_element_located((By.ID, "dk_container__date")))
     dropdown = browser.find_element_by_id('dk_container__date')
     dropdown.click()
+    #hide p elements and clearfix div because they obscure dropdown menu
     el = browser.find_elements_by_tag_name("p")
     for p in range(len(el)):
         browser.execute_script("arguments[0].style.visibility='hidden'", el[p])
+    clearfix_el = browser.find_element_by_xpath("//div[@class='shows-container']/div[@class='clearfix']")
+    browser.execute_script("arguments[0].style.visibility='hidden'", clearfix_el)
     date_li = browser.find_element_by_id('dk_container__date').find_elements_by_tag_name("li")[day]
     date_li.click()
     
@@ -87,8 +91,8 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
     #get show date/day_of_week
     show_date_raw = soup.find('div', attrs = {'class':'show-search-title'})
     show_day_of_week = show_date_raw.find('span', attrs = {'class':'white'}).text.lstrip()
-##    print(show_day_of_week)
     show_date = show_date_raw.text[len(show_day_of_week) + 2:-2].lstrip()
+##    print(show_date)
     for show in soup.findAll('div', attrs = {'class':'show'}):
         #combine show date and time into single timestamp
         show_time_raw = show.find('span', attrs = {'class':'show-time'}).text
@@ -156,7 +160,7 @@ mr_index_values = mr_snapshot_rows_replace.index.values
 data = []
 for r in range(len(mr_index_values)):
     update_row = {}
-    update_row['range'] = 'fact_shows!I' + str(mr_index_values[r])
+    update_row['range'] = 'fact_shows!I' + str(mr_index_values[r] + 2)
     update_row['values'] = [[False]]
     data.append(update_row)
     
@@ -182,4 +186,8 @@ result = service.spreadsheets().values().append(
     valueInputOption="USER_ENTERED", body=body).execute()
 
 browser.quit()
+
+dim_shows()
+
+
 
