@@ -14,6 +14,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
+import pandas as pd
+
 
 #define location dictionary for show_id
 location_dict = {
@@ -43,6 +45,9 @@ innerHTML = browser.execute_script("return document.body.innerHTML")
 # parse the html using beautiful soup and store in variable 'soup'
 soup = BeautifulSoup(innerHTML, 'html.parser')
 
+new_values = []
+showtime_ids = []
+
 """
 Setting up gsheet API
 """
@@ -51,7 +56,7 @@ scopes = 'https://www.googleapis.com/auth/spreadsheets'
 
 # The ID and range of a sample spreadsheet.
 gsheet_id = '1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk'
-gsheet_range = 'A2:D2'
+gsheet_range = 'fact_shows!A2:D2'
 
 # The file token.json stores the user's access and refresh tokens, and is
 # created automatically when the authorization flow completes for the first
@@ -62,8 +67,6 @@ if not creds or creds.invalid:
     flow = client.flow_from_clientsecrets('credentials.json', scopes)
     creds = tools.run_flow(flow, store)
 service = build('sheets', 'v4', http=creds.authorize(Http()))
-
-values = []
 
 for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}).findAll('li'))):
     WebDriverWait(browser, 500).until(EC.visibility_of_element_located((By.ID, "dk_container__date")))
@@ -84,7 +87,7 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
     #get show date/day_of_week
     show_date_raw = soup.find('div', attrs = {'class':'show-search-title'})
     show_day_of_week = show_date_raw.find('span', attrs = {'class':'white'}).text.lstrip()
-    print(show_day_of_week)
+##    print(show_day_of_week)
     show_date = show_date_raw.text[len(show_day_of_week) + 2:-2].lstrip()
     for show in soup.findAll('div', attrs = {'class':'show'}):
         #combine show date and time into single timestamp
@@ -103,6 +106,7 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
             location = "Fat Black Pussycat"
         location_code = location_dict[location]
         showtime_id = location_code + show_timestamp_code
+        showtime_ids.append(showtime_id)
         for comedian in show.findAll('div', attrs = {'class':'comedian-block-desc'}):
             for name in comedian.findAll('span', attrs = {'class':'comedian-block-desc-name'}):
                 raw_name = name.text
@@ -119,10 +123,6 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
                 comedian_description = raw_comedian_description[:-13].lstrip().replace("\t", "")
             else:
                 comedian_description = raw_comedian_description.lstrip().replace("\t", "")
-
-            """
-            Push new row to gsheet
-            """
             
             comedian_value = [
                                 showtime_id
@@ -133,15 +133,53 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
                                 , is_mc
                                 , comedian_name
                                 , comedian_description
+                                , True #is_most_recent_timestamp should always be true when this runs
                             ]
 
-            values.append(comedian_value)
-            
+            new_values.append(comedian_value)
+
+"""
+Update is_most_recent_timestamp flags in existing 
+"""
+gsheet_read_range = 'fact_shows'
+sheet = service.spreadsheets()
+result = sheet.values().get(spreadsheetId=gsheet_id,
+                            range=gsheet_read_range).execute()
+old_values = result.get('values', [])
+df = pd.DataFrame(old_values[1:], columns=old_values[0])
+
+#where existing is_most_recent_timestamp is TRUE and showtime_id is in showtime_ids
+#set is_most_recent_timestamp to TRUE
+mr_snapshot_rows = df.loc[df['is_most_recent_snapshot'] == "TRUE"]
+mr_snapshot_rows_replace = mr_snapshot_rows.loc[mr_snapshot_rows['showtime_id'].isin(showtime_ids)]
+mr_index_values = mr_snapshot_rows_replace.index.values
+data = []
+for r in range(len(mr_index_values)):
+    update_row = {}
+    update_row['range'] = 'fact_shows!I' + str(mr_index_values[r])
+    update_row['values'] = [[False]]
+    data.append(update_row)
+    
 body = {
-    'values': values
+    'valueInputOption': "USER_ENTERED",
+    'data': data
+}
+
+result = service.spreadsheets().values().batchUpdate(
+    spreadsheetId=gsheet_id, body=body).execute()
+
+    
+
+"""
+Push new row to gsheet
+"""
+
+body = {
+    'values': new_values
 }
 result = service.spreadsheets().values().append(
     spreadsheetId=gsheet_id, range=gsheet_range,
     valueInputOption="USER_ENTERED", body=body).execute()
 
 browser.quit()
+
