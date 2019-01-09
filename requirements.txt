@@ -5,3 +5,4 @@ pandas==0.23.4
 beautifulsoup4==4.7.1
 google_api_python_client==1.7.7
 gunicorn
+oauth2client
