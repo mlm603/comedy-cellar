@@ -36,7 +36,7 @@ logging.basicConfig(filename='cellar_scraper.log',level=logging.DEBUG)
 cc_url = 'https://www.comedycellar.com/line-up/'
 
 #use selenium/geckodriver to open firefox
-browser = webdriver.Firefox()
+browser = webdriver.Chrome()
 #navigate to url
 browser.get(cc_url)
 
