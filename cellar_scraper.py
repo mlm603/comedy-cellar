@@ -35,13 +35,17 @@ logging.basicConfig(filename='cellar_scraper.log',level=logging.DEBUG)
 #set url
 cc_url = 'https://www.comedycellar.com/line-up/'
 
+print('checkpoint1')
+
 #use selenium/geckodriver to open firefox
 browser = webdriver.Chrome()
 #navigate to url
 browser.get(cc_url)
 
+print('checkpoint2')
 #grab all inner HTML
 innerHTML = browser.execute_script("return document.body.innerHTML")
+print('checkpoint3')
 
 # parse the html using beautiful soup and store in variable 'soup'
 soup = BeautifulSoup(innerHTML, 'html.parser')
