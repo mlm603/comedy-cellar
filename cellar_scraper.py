@@ -38,7 +38,8 @@ cc_url = 'https://www.comedycellar.com/line-up/'
 print('checkpoint1')
 
 #use selenium/geckodriver to open firefox
-browser = webdriver.Chrome()
+##browser = webdriver.Chrome()
+browser = webdriver.Chrome(executable_path=r"/app/.apt/usr/bin/google-chrome-stable")
 #navigate to url
 browser.get(cc_url)
 
