@@ -16,7 +16,9 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import pandas as pd
 from dim_shows import dim_shows
+import os
 
+chrome_exec_shim = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
 
 #define location dictionary for show_id
 location_dict = {
@@ -39,7 +41,7 @@ print('checkpoint1')
 
 #use selenium/geckodriver to open firefox
 ##browser = webdriver.Chrome()
-browser = webdriver.Chrome(executable_path=r"/app/.apt/usr/bin/google-chrome-stable")
+browser = webdriver.Chrome(executable_path=chrome_exec_shim)
 #navigate to url
 browser.get(cc_url)
 
