@@ -19,6 +19,7 @@ from dim_shows import dim_shows
 import os
 
 chrome_exec_shim = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
+print(chrome_exec_shim)
 
 #define location dictionary for show_id
 location_dict = {
