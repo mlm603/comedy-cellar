@@ -44,11 +44,11 @@ print('checkpoint1')
 #use selenium/geckodriver to open firefox
 ##browser = webdriver.Chrome()
 ##browser = webdriver.Chrome(executable_path=chrome_exec_shim)
-opts = webdriver.ChromeOptions()
-opts.binary_location = chrome_exec_shim
-opts.addArguments("--no-sandbox");
-opts.addArguments("--disable-gpu");
-driver = webdriver.Chrome(executable_path=chrome_exec_shim, chrome_options=opts)
+temp_driver = webdriver.ChromeOptions()
+temp_driver.binary_location = chrome_exec_shim
+temp_driver.addArguments("--no-sandbox");
+temp_driver.addArguments("--disable-gpu");
+driver = webdriver.Chrome(executable_path=chrome_exec_shim, chrome_options=temp_driver)
 #navigate to url
 browser.get(cc_url)
 
