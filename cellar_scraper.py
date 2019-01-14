@@ -19,7 +19,7 @@ from dim_shows import dim_shows
 import os
 
 ##chrome_exec_shim = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
-chrome_exec_shim = '/app/.apt/usr/bin/google-chrome'
+chrome_exec_shim = '/app/.apt/opt/google/chrome/chrome'
 print(chrome_exec_shim)
 
 #define location dictionary for show_id
