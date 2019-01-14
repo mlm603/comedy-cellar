@@ -46,8 +46,8 @@ print('checkpoint1')
 ##browser = webdriver.Chrome(executable_path=chrome_exec_shim)
 temp_driver = webdriver.ChromeOptions()
 temp_driver.binary_location = chrome_exec_shim
-temp_driver.addArguments("--no-sandbox");
-temp_driver.addArguments("--disable-gpu");
+temp_driver.addArgument("--no-sandbox");
+temp_driver.addArgument("--disable-gpu");
 driver = webdriver.Chrome(executable_path=chrome_exec_shim, chrome_options=temp_driver)
 #navigate to url
 browser.get(cc_url)
