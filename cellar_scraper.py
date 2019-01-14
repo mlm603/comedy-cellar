@@ -19,8 +19,8 @@ from dim_shows import dim_shows
 import os
 
 ##chrome_exec_shim = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
-chrome_exec_shim = '/app/.apt/opt/google/chrome/chrome'
-print(chrome_exec_shim)
+chrome_exec_shim = "/app/.apt/opt/google/chrome/chrome"
+##print(chrome_exec_shim)
 
 #define location dictionary for show_id
 location_dict = {
@@ -43,7 +43,12 @@ print('checkpoint1')
 
 #use selenium/geckodriver to open firefox
 ##browser = webdriver.Chrome()
-browser = webdriver.Chrome(executable_path=chrome_exec_shim)
+##browser = webdriver.Chrome(executable_path=chrome_exec_shim)
+opts = webdriver.ChromeOptions()
+opts.binary_location = chrome_exec_shim
+opts.addArguments("--no-sandbox");
+opts.addArguments("--disable-gpu");
+driver = webdriver.Chrome(executable_path=chrome_exec_shim, chrome_options=opts)
 #navigate to url
 browser.get(cc_url)
 
