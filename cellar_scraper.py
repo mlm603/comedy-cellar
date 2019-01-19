@@ -16,11 +16,6 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import pandas as pd
 from dim_shows import dim_shows
-import os
-
-chrome_exec_shim = os.environ.get("GOOGLE_CHROME_BIN", "chromedriver")
-##chrome_exec_shim = "/app/.apt/opt/google/chrome/chrome"
-##print(chrome_exec_shim)
 
 #define location dictionary for show_id
 location_dict = {
@@ -39,23 +34,14 @@ logging.basicConfig(filename='cellar_scraper.log',level=logging.DEBUG)
 #set url
 cc_url = 'https://www.comedycellar.com/line-up/'
 
-print('checkpoint1')
+#use selenium/geckodriver to open chrome
+browser = webdriver.Chrome()
 
-#use selenium/geckodriver to open firefox
-##browser = webdriver.Chrome()
-##browser = webdriver.Chrome(executable_path=chrome_exec_shim)
-temp_driver = webdriver.ChromeOptions()
-##temp_driver.binary_location = chrome_exec_shim
-temp_driver.add_argument("--no-sandbox")
-temp_driver.add_argument("--disable-gpu")
-driver = webdriver.Chrome(executable_path=chrome_exec_shim, chrome_options=temp_driver)
 #navigate to url
 browser.get(cc_url)
 
-print('checkpoint2')
 #grab all inner HTML
 innerHTML = browser.execute_script("return document.body.innerHTML")
-print('checkpoint3')
 
 # parse the html using beautiful soup and store in variable 'soup'
 soup = BeautifulSoup(innerHTML, 'html.parser')
@@ -66,6 +52,7 @@ showtime_ids = []
 """
 Setting up gsheet API
 """
+
 # If modifying these scopes, delete the file token.json.
 scopes = 'https://www.googleapis.com/auth/spreadsheets'
 
@@ -82,6 +69,10 @@ if not creds or creds.invalid:
     flow = client.flow_from_clientsecrets('credentials.json', scopes)
     creds = tools.run_flow(flow, store)
 service = build('sheets', 'v4', http=creds.authorize(Http()))
+
+"""
+Get most recent show snapshots 
+"""
 
 for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}).findAll('li'))):
     WebDriverWait(browser, 500).until(EC.visibility_of_element_located((By.ID, "dk_container__date")))
@@ -106,7 +97,6 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
     show_date_raw = soup.find('div', attrs = {'class':'show-search-title'})
     show_day_of_week = show_date_raw.find('span', attrs = {'class':'white'}).text.lstrip()
     show_date = show_date_raw.text[len(show_day_of_week) + 2:-2].lstrip()
-##    print(show_date)
     for show in soup.findAll('div', attrs = {'class':'show'}):
         #combine show date and time into single timestamp
         show_time_raw = show.find('span', attrs = {'class':'show-time'}).text
@@ -159,6 +149,7 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
 """
 Update is_most_recent_timestamp flags in existing 
 """
+
 gsheet_read_range = 'fact_shows'
 sheet = service.spreadsheets()
 result = sheet.values().get(spreadsheetId=gsheet_id,
