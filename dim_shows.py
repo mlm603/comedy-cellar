@@ -20,10 +20,10 @@ def dim_shows():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    store = file.Storage('token.json')
+    store = file.Storage('/Users/mlm603/localhost/comedy_cellar/token.json')
     creds = store.get()
     if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', scopes)
+        flow = client.flow_from_clientsecrets('/Users/mlm603/localhost/comedy_cellar/credentials.json', scopes)
         creds = tools.run_flow(flow, store)
     service = build('sheets', 'v4', http=creds.authorize(Http()))
 
