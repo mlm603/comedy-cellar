@@ -16,6 +16,9 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import pandas as pd
 from dim_shows import dim_shows
+import os
+import psycopg2
+import sys
 
 #define location dictionary for show_id
 location_dict = {
@@ -29,7 +32,7 @@ snapshot_timestamp = datetime.now(pytz.timezone('US/Eastern'))
 print (snapshot_timestamp)
 
 #set up logging file to record all data collected and any errors
-logging.basicConfig(filename='/Users/mlm603/localhost/comedy_cellar/cellar_scraper.log',level=logging.DEBUG)
+logging.basicConfig(filename='cellar_scraper.log',level=logging.DEBUG)
 
 #set url
 cc_url = 'https://www.comedycellar.com/line-up/'
@@ -63,10 +66,10 @@ gsheet_range = 'fact_shows!A2:D2'
 # The file token.json stores the user's access and refresh tokens, and is
 # created automatically when the authorization flow completes for the first
 # time.
-store = file.Storage('/Users/mlm603/localhost/comedy_cellar/token.json')
+store = file.Storage('token.json')
 creds = store.get()
 if not creds or creds.invalid:
-    flow = client.flow_from_clientsecrets('/Users/mlm603/localhost/comedy_cellar/credentials.json', scopes)
+    flow = client.flow_from_clientsecrets('credentials.json', scopes)
     creds = tools.run_flow(flow, store)
 service = build('sheets', 'v4', http=creds.authorize(Http()))
 

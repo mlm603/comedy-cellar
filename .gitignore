@@ -3,3 +3,4 @@ geckodriver.log
 credentials.json
 token.json
 __pycache__
+dim_shows.csv
