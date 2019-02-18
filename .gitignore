@@ -4,3 +4,5 @@ credentials.json
 token.json
 __pycache__
 dim_shows.csv
+gmail_credentials.json
+token.pickle
