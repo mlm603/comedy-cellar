@@ -91,12 +91,12 @@ def dim_shows():
     """
     Replace dim_shows in PG
     """
-##    cur.execute("TRUNCATE TABLE dim_shows;")
-##
-##    engine = create_engine(DATABASE_URL)
-##    most_recent_snapshot.to_csv('dim_shows.csv', index = False, header = False)
-##    sys.stdin = open('dim_shows.csv')
-##    cur.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
+    cur.execute("TRUNCATE TABLE dim_shows;")
+
+    engine = create_engine(DATABASE_URL)
+    most_recent_snapshot.to_csv('dim_shows.csv', index = False, header = False)
+    sys.stdin = open('dim_shows.csv')
+    cur.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
     conn.commit()
     cur.close()
