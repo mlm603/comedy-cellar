@@ -39,6 +39,23 @@ cur.execute("""
 upcoming_shows = DataFrame(cur.fetchall())
 upcoming_shows.columns = [desc[0] for desc in cur.description]
 
+comedian_names = comedian_names.split(',')
+for comedian in comedian_names:
+    cur.execute("""
+                    INSERT INTO dim_subscriptions
+                    VALUES ('""" + email + "', "
+                        + comedian + ", "
+                """
+                        current_timestamp,
+                        null
+                    );
+                """
+                )
+    
+conn.commit()
+cur.close()
+conn.close()
+
 """
 Use gmail API to send emails
 """
