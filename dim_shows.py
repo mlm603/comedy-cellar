@@ -70,11 +70,11 @@ def dim_shows():
                         , show_timestamp::varchar(255) AS show_timestamp_old
                         , show_day_of_week AS show_day_of_week_old
                     FROM dim_shows
-                    WHERE show_timestamp >= current_date;
+                    WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date;
                 """)
     dim_shows_old = DataFrame(cur.fetchall())
     dim_shows_old.columns = [desc[0] for desc in cur.description]
-
+    
     # Get subscriptions info
     cur.execute("""
                     SELECT *
@@ -83,8 +83,12 @@ def dim_shows():
                 """)
     dim_subscriptions = DataFrame(cur.fetchall())
     dim_subscriptions.columns = [desc[0] for desc in cur.description]
+
+    most_recent_snapshot["show_timestamp_v2"] = pd.to_datetime(most_recent_snapshot["show_timestamp"])
+
+    current_date_string = datetime.datetime.now().strftime("%Y-%m-%d")
     
-    dim_shows_new = most_recent_snapshot.loc[most_recent_snapshot["show_timestamp"]>=datetime.datetime.now().strftime("%Y-%m-%d")]
+    dim_shows_new = most_recent_snapshot.loc[most_recent_snapshot["show_timestamp_v2"]>=current_date_string]
 
     trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions)
 
@@ -146,7 +150,9 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
                                 )
 
     # coalesce old/new columns and clean up table
-    deltasDF['comedian_show_status'] = np.where(deltasDF.showtime_id_old.isnull(), 'added', 'removed')
+    deltasDF['comedian_show_status'] = np.NaN
+    deltasDF['comedian_show_status'][deltasDF.showtime_id_old.isnull()] = 'added'
+    deltasDF['comedian_show_status'][deltasDF.showtime_id.isnull()] = 'removed'
     deltasDF['showtime_id_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.showtime_id, deltasDF.showtime_id_old)
     deltasDF['comedian_name_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.comedian_name, deltasDF.comedian_name_old)
     deltasDF['location_clean'] = np.where(deltasDF.location_old.isnull(), deltasDF.location, deltasDF.location_old)
@@ -178,7 +184,7 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
             for index, row in show_adds.iterrows():
                 message += (
                             '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
-                            datetime.datetime.strptime(row['show_timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%B %d %H:%M')
+                            datetime.datetime.strptime(row['show_timestamp'], '%m/%d/%Y %H:%M:%S').strftime('%B %d %H:%M')
                             + ' at ' + row['location']
                           )
         drops = triggered_emailsDF.loc[(triggered_emailsDF['comedian_show_status'] == 'removed') & (triggered_emailsDF['email'] == subscriber)]
@@ -200,13 +206,4 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
 
         message2 = (service.users().messages().send(userId='me', body=message)
                    .execute())
-
-
-    
-
-    
-
-
-dim_shows()
-
 

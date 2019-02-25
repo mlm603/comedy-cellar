@@ -6,3 +6,4 @@ __pycache__
 dim_shows.csv
 gmail_credentials.json
 token.pickle
+test.py
