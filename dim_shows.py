@@ -169,6 +169,8 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
                                     , how = 'inner'
                                 )
 
+    triggered_emailsDF = triggered_emailsDF.loc[triggered_emailsDF['comedian_show_status'].isnull() == False]
+
     subscribers = dim_subscriptions.email.unique()
 
     # loop through subscribers to generate an email for each subscriber
