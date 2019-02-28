@@ -92,6 +92,8 @@ def dim_shows():
 
     trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions)
 
+    most_recent_snapshot = most_recent_snapshot.drop(columns = ["show_timestamp_v2"])
+
     """
     Replace dim_shows in PG
     """
