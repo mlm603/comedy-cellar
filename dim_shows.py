@@ -162,7 +162,7 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
     deltasDF['show_day_of_week_clean'] = np.where(deltasDF.show_day_of_week_old.isnull(), deltasDF.show_day_of_week, deltasDF.show_day_of_week_old)
     deltasDF = deltasDF[['showtime_id_clean', 'comedian_name_clean', 'location_clean', 'show_timestamp_clean', 'show_day_of_week_clean', 'comedian_show_status']]
     deltasDF.columns = ['showtime_id', 'comedian_name_temp', 'location', 'show_timestamp', 'show_day_of_week', 'comedian_show_status']
-
+    
     # merge deltas with subscriptions to determine what alerts need to be sent
     triggered_emailsDF = dim_subscriptions.merge(
                                     deltasDF
@@ -173,41 +173,45 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
 
     triggered_emailsDF = triggered_emailsDF.loc[triggered_emailsDF['comedian_show_status'].isnull() == False]
 
+    triggered_emails_count = triggered_emailsDF.shape[0]
+
     subscribers = dim_subscriptions.email.unique()
 
     # loop through subscribers to generate an email for each subscriber
-    for subscriber in subscribers:
-        message = """Thanks for subscribing to Cellar Scraper alerts! 
-                    These are the changes to your favorite comedians' scheduled appearances at the Comedy Cellar."""
+    if triggered_emails_count > 0:
+        for subscriber in subscribers:
+            message = """Thanks for subscribing to Cellar Scraper alerts! 
+                        These are the changes to your favorite comedians' scheduled appearances at the Comedy Cellar."""
+            adds = triggered_emailsDF.loc[(triggered_emailsDF['comedian_show_status'] == 'added') & (triggered_emailsDF['email'] == subscriber)]
+            comedian_adds = adds.comedian_name.unique()
+            for comedian in comedian_adds:
+                show_adds = adds.loc[adds['comedian_name'] == comedian]
+                message += ('<br/><br/><b>' + comedian + '</b> was <b>added</b> to the following shows:')
+                for index, row in show_adds.iterrows():
+                    message += (
+                                '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
+                                datetime.datetime.strptime(row['show_timestamp'], '%m/%d/%Y %H:%M:%S').strftime('%B %d %H:%M')
+                                + ' at ' + row['location']
+                              )
+            drops = triggered_emailsDF.loc[(triggered_emailsDF['comedian_show_status'] == 'removed') & (triggered_emailsDF['email'] == subscriber)]
+            comedian_drops = drops.comedian_name.unique()
+            for comedian in comedian_drops:
+                show_drops = drops.loc[drops['comedian_name'] == comedian]
+                message += ('<br/><br/><b>' + comedian + '</b> was <b>removed</b> from the following shows:')
+                for index, row in show_drops.iterrows():
+                    message += (
+                                '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
+                                datetime.datetime.strptime(row['show_timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%B %d %H:%M')
+                                + ' at ' + row['location']
+                              )
+            message = MIMEText(message, 'html')
+            message['to'] = subscriber
+            message['from'] = 'cellarscraper@gmail.com'
+            message['subject'] = 'Comedy Cellar Lineup Alerts'
+            message = {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
 
-        adds = triggered_emailsDF.loc[(triggered_emailsDF['comedian_show_status'] == 'added') & (triggered_emailsDF['email'] == subscriber)]
-        comedian_adds = adds.comedian_name.unique()
-        for comedian in comedian_adds:
-            show_adds = adds.loc[adds['comedian_name'] == comedian]
-            message += ('<br/><br/><b>' + comedian + '</b> was <b>added</b> to the following shows:')
-            for index, row in show_adds.iterrows():
-                message += (
-                            '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
-                            datetime.datetime.strptime(row['show_timestamp'], '%m/%d/%Y %H:%M:%S').strftime('%B %d %H:%M')
-                            + ' at ' + row['location']
-                          )
-        drops = triggered_emailsDF.loc[(triggered_emailsDF['comedian_show_status'] == 'removed') & (triggered_emailsDF['email'] == subscriber)]
-        comedian_drops = drops.comedian_name.unique()
-        for comedian in comedian_drops:
-            show_drops = drops.loc[drops['comedian_name'] == comedian]
-            message += ('<br/><br/><b>' + comedian + '</b> was <b>removed</b> from the following shows:')
-            for index, row in show_drops.iterrows():
-                message += (
-                            '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
-                            datetime.datetime.strptime(row['show_timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%B %d %H:%M')
-                            + ' at ' + row['location']
-                          )
-        message = MIMEText(message, 'html')
-        message['to'] = subscriber
-        message['from'] = 'cellarscraper@gmail.com'
-        message['subject'] = 'Comedy Cellar Lineup Alerts'
-        message = {'raw': base64.urlsafe_b64encode(message.as_string().encode()).decode()}
-
-        message2 = (service.users().messages().send(userId='me', body=message)
-                   .execute())
+            message2 = (service.users().messages().send(userId='me', body=message)
+                       .execute())
+    else:
+        print('no changes')
 
