@@ -1,7 +1,11 @@
 [Project Background](#project-background)
+
 [Goals](#goals)
+
 [Outcomes](#outcomes)
+
 [System Overview](#system-overview)
+
 [Additional Links](#additional-links)
 
 # Project Background
