@@ -22,3 +22,7 @@ When a user initially subscribes, they will receive a welcome email listing all 
 Each night when the script runs (7pm ET), if there are any new shows added for the subscriber's selected comedians or if they are dropped from a show the user was previously alerted to, the user will receive an update email
 
 ![update email](https://raw.githubusercontent.com/mlm603/comedy-cellar/master/pictures/update_email.png)
+
+# System Overview
+
+![system diagram](https://raw.githubusercontent.com/mlm603/comedy-cellar/master/pictures/system_diagram.png)
