@@ -1,6 +1,8 @@
-[Project outline](https://docs.google.com/document/d/1y4zlj_LR3HZ_MzT7Rh7jvh73xsZhqj8Ez5qk92yTCfk/edit#)
-
-[fact_shows Gsheet (full history of scrapes)](https://docs.google.com/spreadsheets/d/1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk/edit#gid=0)
+[Project Background](#project-background)
+[Goals](#goals)
+[Outcomes](#outcomes)
+[System Overview](#system-overview)
+[Additional Links](#additional-links)
 
 # Project Background
 
@@ -26,3 +28,11 @@ Each night when the script runs (7pm ET), if there are any new shows added for t
 # System Overview
 
 ![system diagram](https://github.com/mlm603/comedy-cellar/blob/master/pictures/system_diagram.png)
+
+# Additional links
+
+[Original project outline](https://docs.google.com/document/d/1y4zlj_LR3HZ_MzT7Rh7jvh73xsZhqj8Ez5qk92yTCfk/edit#)
+
+[fact_shows Gsheet (full history of scrapes)](https://docs.google.com/spreadsheets/d/1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk/edit#gid=0)
+
+[Steps and SQL](https://github.com/mlm603/comedy-cellar/blob/master/steps_and_sql.md)
