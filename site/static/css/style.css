@@ -28,6 +28,23 @@ main {
   width: 300px;
 }
 
+.comedian_circle {
+  background-color: lightgrey;
+  height: 50px;
+  width: 50px;
+  border-radius: 50px;
+  font-size: 18px;
+  text-align: center;
+  padding: 15px 0;
+  margin: 5px 2.5px 10px 2.5px;
+  display: inline-block;
+}
+
+#tooltip{
+  background-color: lightyellow;
+  padding: 10px;
+}
+
 /* Style the entire autocomplete dropdown */
 ul.ui-autocomplete {
   list-style: none;

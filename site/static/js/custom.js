@@ -37,16 +37,51 @@ var comedian_names = unique_comedians.map(a => a.comedian_name)
 
 var selected_comedians = []
 
+var selected_comedians_index = 0
+
 $("#signup_comedian_search").autocomplete({
     source: comedian_names,
     select: function(event, ui) {
-        alert(ui.item.value);
-        selected_comedians.push(ui.item.value);
-        console.log(selected_comedians);
+        var selected_comedian_name = ui.item.value
+        comedian_initials = selected_comedian_name.split(' ')[0][0] + selected_comedian_name.split(' ')[1][0]
+        selected_comedians.push(selected_comedian_name);
+        new_selected_comedian(selected_comedian_name, comedian_initials, selected_comedians_index);
+        selected_comedians_index += 1;
         $(this).val('');
+
         return false;
     }
 });
+
+var tooltip = d3.select("body")
+                .append("div")
+                .style("position", "absolute")
+                .style("z-index", "10")
+                .style("visibility", "hidden")
+                .attr("id", "tooltip")
+                .html("<div id=name>name</div><div style='font-size: 10px; font-style: italic'>Click to remove</div>");
+
+function new_selected_comedian(name, initials, index){
+  d3.select("#selected_comedians")
+    .append("div")
+    .text(initials)
+    .attr("class", "comedian_circle")
+    .attr("onclick", "remove_comedian(this)")
+    .attr("id", "comedian" + index)
+    .on("mouseover", ()=>{
+                      d3.select("#tooltip")
+                        .select("#name")
+                        .text(name);
+                      tooltip.style("visibility", "visible")
+        })
+    .on("mousemove", () => tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px"))
+    .on("mouseout", () => tooltip.style("visibility", "hidden"));
+}
+
+function remove_comedian(comedian){
+  $("#"+ comedian.id).remove();
+  tooltip.style("visibility", "hidden");
+}
 
 // $("#signup_comedian_search").on('click', function(){alert('hi')})
 
