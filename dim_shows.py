@@ -51,6 +51,7 @@ def dim_shows():
     df = pd.DataFrame(values[1:], columns=values[0])
     most_recent_snapshot = df.loc[df['is_most_recent_snapshot'] == "TRUE"]
     most_recent_snapshot = most_recent_snapshot.drop(columns = ['is_most_recent_snapshot'])
+    most_recent_snapshot['comedian_description'] = most_recent_snapshot['comedian_description'].str.slice(0, 252)
 
     """
     Send emails regarding changes
