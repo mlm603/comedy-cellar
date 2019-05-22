@@ -7,121 +7,48 @@
     <!-- <link rel="stylesheet" href="css/custom.css">
     <link rel="stylesheet" href="basic.css"> -->
     <link rel= "stylesheet" type= "text/css" href= "/static/css/style.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
-      var graphData = {{ shows|tojson }}
+      var frequent_comedians = {{ frequent_comedians|tojson }}
+      var unique_comedians = {{ unique_comedians|tojson }}
     </script>
 </head>
 <main id="main">
-<!-- <div class="container-fluid">
-  <section class="row container-fluid">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur euismod ac lorem cursus feugiat. In eros diam, malesuada vitae libero id, scelerisque euismod risus. Quisque dictum tellus lorem, at mattis ante laoreet sed. </p>
-  </section>
-  <div class="container-fluid">
-  <ul class="nav row nav-pills nav-justified">
-    <li role="presentation" class="nav-item active">
-      <a href="#comedian" class="nav-link active" role="tab" data-toggle="pill">Comedian</a>
-    </li>
-    <li role="presentation" class="nav-item">
-      <a href="#club" class="nav-link" role="tab" data-toggle="pill">Club</a>
-    </li>
-    <li role="presentation" class="nav-item">
-      <a href="#day" class="nav-link" role="tab" data-toggle="pill">Subscribe!</a>
-    </li>
-  </ul>
-    
-    <div class="tab-content">
-      <div role="tabpanel" class="tab-pane fade in active" id="comedian">
-        
-<section>
-<div class="container-fluid">
-<div class="row">
-  <div class="col-sm-2">
-  <ul class="nav row nav-pills nav-stacked">
-  {% for shows in shows %}
-    {% if loop.index == 1 %}
-    <li role="presentation" class="nav-item active">
-      <a href="#{{shows.comedian}}" class="nav-link active" role="tab" data-toggle="pill">{{shows.comedian}}</a>
-    </li>
-    {% else %}
-    <li role="presentation" class="nav-item">
-      <a href="#{{shows.comedian}}" class="nav-link" role="tab" data-toggle="pill">{{shows.comedian}}</a>
-    </li>
-    {% endif %}
-  {% endfor %}
-  </ul>
-  </div>
-  <div class="col-sm-10">
-    <div class="tab-content">
-    {% for shows in shows %}
-      {% if loop.index == 1 %}
-      <div role="tabpanel" class="tab-pane fade in active" id="{{shows.comedian}}">
-        <p>{{shows.description}}</p>
-      </div>
-      {% else %}
-      <div role="tabpanel" class="tab-pane fade" id="{{shows.comedian}}">
-         <p>{{shows.description}}</p>
-      </div>
-      {% endif %}
-    {% endfor %}
-    </div>
-  </div>
-</div>
-</div>
-</section>
-      
-      </div>
-      <div role="tabpanel" class="tab-pane fade" id="club">
 
-<section>
-<div class="container-fluid">
-<div class="row">
-  <div class="col-sm-2">
-  <ul class="nav row nav-pills nav-stacked">
-  {% for shows in shows %}
-    {% if loop.index == 1 %}
-    <li role="presentation" class="nav-item active">
-      <a href="#{{shows.location}}" class="nav-link active" role="tab" data-toggle="pill">{{shows.location}}</a>
-    </li>
-    {% else %}
-    <li role="presentation" class="nav-item">
-      <a href="#{{shows.location}}" class="nav-link" role="tab" data-toggle="pill">{{shows.location}}</a>
-    </li>
-    {% endif %}
-  {% endfor %}
-  </ul>
-  </div>
-  <div class="col-sm-10">
-    <div class="tab-content">
-    {% for shows in shows %}
-      {% if loop.index == 1 %}
-      <div role="tabpanel" class="tab-pane fade in active" id="{{shows.location}}">
-        <p>{{shows.comedian}}</p>
-      </div>
-      {% else %}
-      <div role="tabpanel" class="tab-pane fade" id="{{shows.location}}">
-         <p>{{shows.comedian}}</p>
-      </div>
-      {% endif %}
+  <!-- <datalist id="comedians">
+    {% for comedian in unique_comedians %}
+      <option value="{{comedian.comedian_name}}">
     {% endfor %}
-    </div>
-  </div>
-</div>
-</div>
-</section>
+  </datalist> -->
 
-      </div>
-      <div role="tabpanel" class="tab-pane fade" id="day">
-      </div>
-    </div>
-</div>
-</div> -->
-<div style = "padding-top:50px; padding-left: 20px">
-  <div>
-    {% for show in shows %}
-        <p>{{show.comedian_name}}</p>
-    {% endfor %}
+  <div id = "welcome">
+    <h2>Welcome to Cellar Scraper!</h2>
+    <p class = "subtitle">
+      Every night, we collect the latest <a href="http://comedycellar.com/">Comedy Cellar</a> listings in order to alert you when your favorite comedians are added and provide charts and stats to help you plan your visit.
+    </p>
   </div>
-</div>
+
+  <div style = "text-align:center">
+    <div id = "signup_form">
+      <h2 style = "color:white; margin:0px !important">Sign Up</h2>
+      <p class = "subtitle">to follow your favorite comedians</p>
+      <input id = "signup_comedian_search" type = "search" autocomplete = "on"></input>
+      <!-- list = "comedians" -->
+    </div>
+  </div>
+
+<!--   <div class="rTable">
+    <div class="rTableRow">
+      <div class="rTableHead" style="width: 200px">Name</div>
+    </div>
+    {% for comedian in unique_comedians %}
+      <div class="rTableRow">
+        <div class="rTableCell">{{comedian.comedian_name}}</div>
+      </div>
+    {% endfor %}
+  </div> -->
+  <h2>Top 10 Comedians by Number of Shows</h2>
+
 </main>
 {% endblock %}
 

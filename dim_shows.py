@@ -89,7 +89,7 @@ def dim_shows():
     current_date_string = datetime.datetime.now().strftime("%Y-%m-%d")
     
     dim_shows_new = most_recent_snapshot.loc[most_recent_snapshot["show_timestamp_v2"]>=current_date_string]
-
+   
     trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions)
 
     most_recent_snapshot = most_recent_snapshot.drop(columns = ["show_timestamp_v2"])
@@ -215,3 +215,5 @@ def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
     else:
         print('no changes')
 
+
+dim_shows()

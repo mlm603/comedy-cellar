@@ -1,4 +1,81 @@
 body { 
   /*background-color: red !important*/
-  overflow: hidden;
+  /*overflow: hidden;*/
+}
+
+main {
+  padding: 0px 20px 0px 20px;
+}
+
+.subtitle {
+  color: grey;
+  font-size: 16px;
+}
+
+#welcome {
+  padding-top:60px; 
+  text-align:center;
+  margin-bottom: 40px;
+}
+
+#signup_form {
+  background-color: black;
+  padding: 10px 0px 10px 0px;
+  border-radius: 5px;
+}
+
+#signup_comedian_search {
+  width: 300px;
+}
+
+/* Style the entire autocomplete dropdown */
+ul.ui-autocomplete {
+  list-style: none;
+  padding: 0;
+  background-color: white;
+  border: 1px solid grey;
+  width: 300px;
+}
+
+/* Pad the autocomplete text only */
+div.ui-menu-item-wrapper {
+  padding-left: 5px;
+}
+
+/* Highlight the autocomplete option that the user is hovering over*/
+li.ui-menu-item:hover {
+  background-color: lightgrey;
+}
+
+.rTable {
+  display: table;
+}
+
+.rTableRow {
+  display: table-row;
+}
+
+.rTableCell, .rTableHead {
+  display: table-cell;
+  padding: 3px 10px;
+  border: 1px solid black;
+}
+
+.rTableHead {
+  background: black;
+  color: white;
+  font-weight: bold;
+}
+
+div.rTable > div.rTableRow:nth-of-type(odd) {
+  background: lightgrey;
+}
+
+.bar{
+  fill: #4f2d7f;
+}
+
+.bar_label {
+  /*font-weight: bold;*/
+  fill: white;
 }
