@@ -5,6 +5,8 @@ import os
 import sqlalchemy
 from sqlalchemy import create_engine, MetaData, select, Table
 from flask import jsonify
+from datetime import datetime
+import pytz
 import json
 
 app = Flask(__name__)
@@ -51,9 +53,17 @@ frequent_comedians_results = make_dict(frequent_comedians)
 
 unique_comedians_results = make_dict(unique_comedians)
 
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def index():
-	# shows = dim_shows.query.all()
+	if request.method == 'POST':
+		signup_timestamp = datetime.now(pytz.timezone('US/Eastern')).strftime('%Y-%m-%d %H:%M:%S.%f')
+		subscription = request.get_json()
+		email = subscription['email']
+		comedians = subscription['comedians']
+		for comedian_name in comedians:
+			statement = "INSERT INTO dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')"
+			db.session.execute(statement)
+			db.session.commit()
 	return render_template('index.html', frequent_comedians=frequent_comedians_results, unique_comedians=unique_comedians_results)
 
 if __name__ == '__main__':

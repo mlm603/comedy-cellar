@@ -43,12 +43,13 @@ $("#signup_comedian_search").autocomplete({
     source: comedian_names,
     select: function(event, ui) {
         var selected_comedian_name = ui.item.value
-        comedian_initials = selected_comedian_name.split(' ')[0][0] + selected_comedian_name.split(' ')[1][0]
-        selected_comedians.push(selected_comedian_name);
-        new_selected_comedian(selected_comedian_name, comedian_initials, selected_comedians_index);
-        selected_comedians_index += 1;
+        if (selected_comedians.indexOf(selected_comedian_name) == -1){
+          comedian_initials = selected_comedian_name.split(' ')[0][0] + selected_comedian_name.split(' ')[1][0]
+          selected_comedians.push(selected_comedian_name);
+          new_selected_comedian(selected_comedian_name, comedian_initials, selected_comedians_index);
+          selected_comedians_index += 1;
+        }
         $(this).val('');
-
         return false;
     }
 });
@@ -82,6 +83,43 @@ function remove_comedian(comedian){
   $("#"+ comedian.id).remove();
   tooltip.style("visibility", "hidden");
 }
+
+function show_signup_form(){
+  $("#overlay").css("display", "block");
+}
+
+function exit_form(){
+  reset_form();
+}
+
+function reset_form(){
+  selected_comedians = []
+  for (i=0; i<selected_comedians_index; i++){
+    $("#comedian"+i).remove();
+  }
+  selected_comedians_index = 0
+  $("#signup_comedian_search").val('');
+  $("#user_email").val('');
+  $("#overlay").css("display", "none");
+  return false;
+}
+
+$("#form_submit").on('click', function(){
+  // alert('hi')
+  signup_data = {}
+  signup_data["email"] = $("#user_email").val()
+  signup_data["comedians"] = selected_comedians
+  console.log(JSON.stringify(signup_data))
+  $.ajax({
+    type: "POST",
+    contentType: "application/json;charset=utf-8",
+    url: "/",
+    traditional: "true",
+    data: JSON.stringify(signup_data),
+    dataType: "json"
+  })
+  reset_form();
+})
 
 // $("#signup_comedian_search").on('click', function(){alert('hi')})
 

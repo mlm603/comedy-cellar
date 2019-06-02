@@ -13,7 +13,7 @@
       var unique_comedians = {{ unique_comedians|tojson }}
     </script>
 </head>
-<main id="main">
+<main id="main" style = "overflow-x: hidden">
 
   <!-- <datalist id="comedians">
     {% for comedian in unique_comedians %}
@@ -29,16 +29,34 @@
   </div>
 
   <div style = "text-align:center">
-    <div id = "signup_form">
+    <div id = "signup_btn" onclick = "show_signup_form()">
       <h2 style = "color:white; margin:0px !important">Sign Up</h2>
       <p class = "subtitle">to follow your favorite comedians</p>
-      <div id = "selected_comedians">
-        <!-- <div class = "comedian_circle">MM</div>
-        <div class = "comedian_circle">PK</div>
-        <div class = "comedian_circle">MM1</div>
-        <div class = "comedian_circle">PK1</div> -->
+      <!-- <div id = "selected_comedians">
       </div>
-      <input id = "signup_comedian_search" type = "search" autocomplete = "on"></input>
+      <input id = "signup_comedian_search" type = "search" autocomplete = "on"></input> -->
+      <!-- list = "comedians" -->
+    </div>
+  </div>
+
+  <div id = "overlay">
+    <div id = "signup_form">
+      <div id = "exit_form" class = "button_circle" onclick = "exit_form()">X</div>
+      <h2 style = "text-align:center" >Sign Up</h2>
+      <p class = "subtitle" style = "text-align:center" >to follow your favorite comedians</p>
+      <div id = "selected_comedians" style = "min-height:65px"></div>
+      <div>
+        <p class = "form_label">Comedian Names</p>
+        <input id = "signup_comedian_search" type = "search" autocomplete = "on" class = "text_input"></input>
+      </div>
+      <br style = "height: 20px"/>
+      <div>
+        <p class = "form_label">Your Email</p>
+        <input id = "user_email" class = "text_input"></input>
+      </div>
+      <div value = "Submit" id = "form_submit">
+        Submit
+      </div>
       <!-- list = "comedians" -->
     </div>
   </div>
