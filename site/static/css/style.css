@@ -7,6 +7,22 @@ main {
   padding: 0px 20px 0px 20px;
 }
 
+@media (min-width:1000px){
+  .main_page_graph {
+    display: inline-block;
+    /*margin-right: 20px;*/
+    margin-left:1%;
+    width:48%;
+    /*min-width: 600px;*/
+  }
+}
+
+/*@media (max-width:1200px){
+  .main_page_graph {
+    max-height: 400px;
+  }
+}*/
+
 .subtitle {
   color: rgba(0,0,0,0.6);
   font-size: 16px;
