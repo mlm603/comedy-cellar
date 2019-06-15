@@ -11,6 +11,7 @@
     <script>
       var frequent_comedians = {{ frequent_comedians|tojson }}
       var unique_comedians = {{ unique_comedians|tojson }}
+      var dry_spell_comedians = {{ dry_spell_comedians|tojson }}
     </script>
 </head>
 <main id="main" style = "overflow-x: hidden">
@@ -32,8 +33,8 @@
     <h2>Top 10 Comedians by Number of Shows</h2>
   </div>
 
-  <div id = "performance_times" class = "main_page_graph">
-    <h2>Average Performers per Show</h2>
+  <div id = "dry_spells" class = "main_page_graph">
+    <h2>Comedians with the Longest Dry Spell</h2>
   </div>
 
   <div style = "text-align:center">

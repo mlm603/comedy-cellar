@@ -10,18 +10,10 @@ main {
 @media (min-width:1000px){
   .main_page_graph {
     display: inline-block;
-    /*margin-right: 20px;*/
     margin-left:1%;
     width:48%;
-    /*min-width: 600px;*/
   }
 }
-
-/*@media (max-width:1200px){
-  .main_page_graph {
-    max-height: 400px;
-  }
-}*/
 
 .subtitle {
   color: rgba(0,0,0,0.6);
@@ -173,13 +165,4 @@ li.ui-menu-item:hover, li.ui-menu-item:focus {
 
 div.rTable > div.rTableRow:nth-of-type(odd) {
   background: lightgrey;
-}
-
-.bar{
-  fill: #4f2d7f;
-}
-
-.bar_label {
-  /*font-weight: bold;*/
-  fill: white;
 }

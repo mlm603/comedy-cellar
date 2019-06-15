@@ -2,75 +2,43 @@ const w = 500;
 const h = 300;
 const padding = 20;
 
-function make_top_comedians_chart(){
+function make_top10_bar_chart(div, dataset, axis_values, fill_color, font_color){
+// Generates chart of top 10 comedians based on selected dataset
 
-  const svg = d3.select("#top_comedians")
+  const svg = d3.select(div)
               .append("svg")
-              // .attr("width", w)
-              // .attr("height", h)
               .attr('viewBox', '0 0 ' + w + ' ' + h);
 
   const xScale = d3.scaleLinear()
-                   .domain([0, d3.max(frequent_comedians, (d) => d.show_count)])
+                   .domain([0, d3.max(dataset, (d) => d[axis_values])])
                    .range([h-padding/2,padding/2]);
 
   svg.selectAll("rect")
-      .data(frequent_comedians)
+      .data(dataset)
       .enter()
       .append("rect")
       .attr("x", 0)
       .attr("y", (d, i) => (padding/2) + i * ((h - padding)/10))
       .attr("height", (h - padding * 2)/10)
-      .attr("width", (d) => w - xScale(d.show_count) - padding/2)
-      .attr("class","bar")
+      .attr("width", (d) => w - xScale(d[axis_values]) - padding/2)
+      .attr("fill", fill_color)
 
   svg.selectAll("text")
-      .data(frequent_comedians)
+      .data(dataset)
       .enter()
       .append("text")
-      .text((d) => (d.comedian_name + " - " + d.show_count))
+      .text((d) => (d.comedian_name + " - " + d[axis_values]))
       .attr("x", padding/2)
       .attr("y", (d, i) => (padding/2) + i * ((h - padding)/10) + 17)
-      .attr("class", "bar_label")
+      .attr("fill", font_color)
 
 }
 
-function make_performance_times_chart(){
+// generate chart of top 10 comedians by number of shows
+make_top10_bar_chart(div = "#top_comedians", dataset = frequent_comedians, axis_values = "show_count", fill_color = "#4f2d7f", font_color = "white")
 
-  const svg = d3.select("#performance_times")
-              .append("svg")
-              // .attr("width", w)
-              // .attr("height", h)
-              .attr('viewBox', '0 0 ' + w + ' ' + h);
-
-  const xScale = d3.scaleLinear()
-                   .domain([0, d3.max(frequent_comedians, (d) => d.show_count)])
-                   .range([h-padding/2,padding/2]);
-
-  svg.selectAll("rect")
-      .data(frequent_comedians)
-      .enter()
-      .append("rect")
-      .attr("x", 0)
-      .attr("y", (d, i) => (padding/2) + i * ((h - padding)/10))
-      .attr("height", (h - padding * 2)/10)
-      .attr("width", (d) => w - xScale(d.show_count) - padding/2)
-      .attr("class","bar")
-
-  svg.selectAll("text")
-      .data(frequent_comedians)
-      .enter()
-      .append("text")
-      .text((d) => (d.comedian_name + " - " + d.show_count))
-      .attr("x", padding/2)
-      .attr("y", (d, i) => (padding/2) + i * ((h - padding)/10) + 17)
-      .attr("class", "bar_label")
-
-}
-
-make_top_comedians_chart()
-
-make_performance_times_chart()
+// generate chart of top 10 comedians by number of days since last show
+make_top10_bar_chart(div = "#dry_spells", dataset = dry_spell_comedians, axis_values = "days_since_last_show", fill_color = "#62bad4", font_color = "black")
 
 var comedian_names = unique_comedians.map(a => a.comedian_name)
 
@@ -144,7 +112,6 @@ function reset_form(){
 }
 
 $("#form_submit").on('click', function(){
-  // alert('hi')
   signup_data = {}
   signup_data["email"] = $("#user_email").val()
   signup_data["comedians"] = selected_comedians

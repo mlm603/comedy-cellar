@@ -38,6 +38,17 @@ unique_comedians = db.session.execute('''
 											ORDER BY comedian_name ASC		
 										''')
 
+dry_spell_comedians = db.session.execute('''
+											SELECT comedian_name
+											  , MAX(show_timestamp) AS last_show
+											  , DATE_PART('day', NOW() - MAX(show_timestamp)) AS days_since_last_show
+											FROM dim_shows 
+											WHERE comedian_name <> 'MORE TO BE ANNOUNCED'
+											GROUP BY 1 
+											ORDER BY 3 desc
+											LIMIT 10;
+										''')
+
 # frequent_comedians_results = []
 
 def make_dict(result):
@@ -53,6 +64,8 @@ frequent_comedians_results = make_dict(frequent_comedians)
 
 unique_comedians_results = make_dict(unique_comedians)
 
+dry_spell_comedians = make_dict(dry_spell_comedians)
+
 @app.route('/', methods=['GET','POST'])
 def index():
 	if request.method == 'POST':
@@ -64,7 +77,11 @@ def index():
 			statement = "INSERT INTO dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')"
 			db.session.execute(statement)
 			db.session.commit()
-	return render_template('index.html', frequent_comedians=frequent_comedians_results, unique_comedians=unique_comedians_results)
+	return render_template('index.html'
+						, frequent_comedians=frequent_comedians_results
+						, unique_comedians=unique_comedians_results
+						, dry_spell_comedians=dry_spell_comedians
+				)
 
 if __name__ == '__main__':
 	app.run(host=os.getenv('IP', '0.0.0.0'), 
