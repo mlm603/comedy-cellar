@@ -77,7 +77,7 @@ def index():
 			statement = "INSERT INTO dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')"
 			db.session.execute(statement)
 			db.session.commit()
-	return render_template('index.html'
+	return render_template('home_page_index.html'
 						, frequent_comedians=frequent_comedians_results
 						, unique_comedians=unique_comedians_results
 						, dry_spell_comedians=dry_spell_comedians
