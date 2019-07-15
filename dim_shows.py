@@ -21,6 +21,9 @@ import base64
 
 def dim_shows():
 
+    pd.set_option('mode.chained_assignment', None)
+    
+
     """
     Use gsheet API to get fact_shows and use to create new dim_shows
     """

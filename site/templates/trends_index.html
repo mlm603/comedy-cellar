@@ -1,0 +1,96 @@
+{% include "header.html" %}
+
+{% block content %}
+<head>
+    <title>Cellar Scraper</title>
+    <!-- Custom local CSS -->
+    <!-- <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="basic.css"> -->
+    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+      var unique_comedians = {{ unique_comedians|tojson }}
+      var summary_stats = {{ summary_stats|tojson }}
+      var day_of_week_stats = {{ day_of_week_stats|tojson }}
+      var upcoming_shows = {{ upcoming_shows|tojson }}
+    </script>
+    <link rel= "stylesheet" type= "text/css" href= "/static/css/trends.css">
+</head>
+<main id="main" style = "overflow-x: hidden">
+
+  <div id = "welcome">
+    <h2>Detailed Data</h2>
+    <p class = "subtitle">
+      Select a comedian you're interested in to see information about their past performances and listings of upcoming shows.
+    </p>
+    <p class = "subtitle">
+      Note that data is not available prior to December 27, 2018.
+    </p>
+  </div>
+
+  <div>
+    <div class = "single_value">
+      <p class = "single_value_value" id = "previous_shows_value">x</p>
+      <p class = "single_value_title">Previous Shows</p>
+    </div>
+
+    <div class = "single_value">
+      <p class = "single_value_value" id = "upcoming_shows_value">x</p>
+      <p class = "single_value_title">Upcoming Shows</p>
+    </div>
+
+    <div class = "single_value">
+      <p class = "single_value_value" id = "most_recent_show_value">mm/dd/yy</p>
+      <p class = "single_value_title">Most Recent Show</p>
+    </div>
+  </div>
+
+  <div class = "chart_title">Shows by Day of Week</div>
+  <div id = "day_of_week_chart" class = "chart_container"></div>
+
+<!--   <div style = "text-align:center">
+    <div id = "test_btn" style = "background-color: red">
+      <h2 style = "color:white; margin:0px !important">TESTTEST</h2>
+    </div>
+  </div> -->
+
+ <!--  <div class="tableTitle"><h2>Upcoming Shows</h2></div>
+  <div class="rTable">
+    <div class="rTableRow">
+      <div class="rTableHead">Show Date</div>
+      <div class="rTableHead">Show Time</div>
+      <div class="rTableHead">Day of Week</div>
+      <div class="rTableHead">Location</div>
+      <div class="rTableHead">Other Comedians</div>
+    </div>
+    <div>
+    {% for show in upcoming_shows %}
+    <div class="rTableRow rowtest">
+        <div class="rTableCell small_cell">{{show.show_timestamp.strftime('%m-%d')}}</div>
+        <div class="rTableCell small_cell">{{show.show_timestamp.strftime('%H:%M')}}</div>
+        <div class="rTableCell small_cell">{{show.show_day_of_week}}</div>
+        <div class="rTableCell small_cell">{{show.location}}</div>
+        <div class="rTableCell">{{show.other_comedians}}</div>
+    </div>
+    {% endfor %}
+  </div> -->
+
+  <div class="tableTitle"><h2>Upcoming Shows</h2></div>
+  <div class = "subtitle" id = "no_upcoming_shows"> No Upcoming Shows </div>
+  <div class="rTable" id = "upcoming_shows_table">
+    <div class="rTableRow">
+      <div class="rTableHead">Show Date</div>
+      <div class="rTableHead">Show Time</div>
+      <div class="rTableHead">Day of Week</div>
+      <div class="rTableHead">Location</div>
+      <div class="rTableHead">Other Comedians</div>
+    </div>
+  </div>
+
+  {% include "signup.html" %}
+
+</main>
+{% endblock %}
+
+{% include "libraries.html" %}
+<script type="text/javascript" src="/static/js/trends.js"></script>

@@ -1,0 +1,116 @@
+#signup_btn {
+  background-color: #1db954;
+  padding: 10px 0px 10px 0px;
+  border-radius: 5px;
+}
+
+#overlay {
+  position: fixed; /* Sit on top of the page content */
+  display: none; /* Hidden by default */
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 2;
+}
+
+.form_label {
+  /*float: left;*/
+  display: inline-block;
+  margin-left: 10px;
+  text-align: left !important;
+}
+
+.text_input {
+  /*float: left;*/
+  display: inline-block;
+  margin-left: 10px;
+  text-align: left !important;
+}
+
+.comedian_circle {
+  background-color: lightgrey;
+  height: 50px;
+  width: 50px;
+  border-radius: 50px;
+  font-size: 18px;
+  text-align: center;
+  padding: 15px 0;
+  margin: 5px 2.5px 10px 2.5px;
+  display: inline-block;
+}
+
+.button_circle {
+  background-color: lightgrey;
+  height: 30px;
+  width: 30px;
+  border-radius: 30px;
+  font-size: 18px;
+  text-align: center;
+  padding: 3px 0;
+  display: inline-block;
+}
+
+
+#signup_form {
+  position: fixed;
+  background-color: white;
+  height: 80%;
+  width: 60%;
+  padding: 10px 0px 10px 0px;
+  top: 100;
+  left: 20%;
+  border-radius: 5px;
+}
+
+#tooltip{
+  background-color: lightyellow;
+  padding: 10px;
+}
+
+#form_submit {
+  width: 100%;
+  height: 80px;
+  font-size: 40px;
+  color: white;
+  padding-top: 10px;
+  margin-top: 10px;
+  text-align: center;
+  background-color: rgb(0,255,0);
+}
+
+/* Style the entire autocomplete dropdown */
+ul.ui-autocomplete {
+  list-style: none;
+  padding: 0;
+  background-color: white;
+  border: 1px solid grey;
+  width: 300px;
+  z-index: 1100;
+  position: absolute;
+  top: 200;
+  left: 20%;
+  max-height: 50%;
+  overflow: auto;
+}
+
+/* Pad the autocomplete text only */
+div.ui-menu-item-wrapper {
+  padding-left: 5px;
+}
+
+/* Highlight the autocomplete option that the user is hovering over*/
+li.ui-menu-item:hover, li.ui-menu-item:focus {
+  background-color: lightgrey;
+}
+
+.ui-helper-hidden-accessible {
+  display:none;
+}
+
+#exit_form {
+  position: absolute;
+  right: 16;
+
+}

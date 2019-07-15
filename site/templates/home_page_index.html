@@ -6,7 +6,7 @@
     <!-- Custom local CSS -->
     <!-- <link rel="stylesheet" href="css/custom.css">
     <link rel="stylesheet" href="basic.css"> -->
-    <link rel= "stylesheet" type= "text/css" href= "/static/css/style.css">
+    
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
       var frequent_comedians = {{ frequent_comedians|tojson }}
@@ -37,38 +37,7 @@
     <h2>Comedians with the Longest Dry Spell</h2>
   </div>
 
-  <div style = "text-align:center">
-    <div id = "signup_btn" onclick = "show_signup_form()">
-      <h2 style = "color:white; margin:0px !important">Sign Up</h2>
-      <p class = "subtitle">to follow your favorite comedians</p>
-      <!-- <div id = "selected_comedians">
-      </div>
-      <input id = "signup_comedian_search" type = "search" autocomplete = "on"></input> -->
-      <!-- list = "comedians" -->
-    </div>
-  </div>
-
-  <div id = "overlay">
-    <div id = "signup_form">
-      <div id = "exit_form" class = "button_circle" onclick = "reset_form()">X</div>
-      <h2 style = "text-align:center" >Sign Up</h2>
-      <p class = "subtitle" style = "text-align:center" >to follow your favorite comedians</p>
-      <div id = "selected_comedians" style = "min-height:65px"></div>
-      <div>
-        <p class = "form_label">Comedian Names (Select from dropdown)</p>
-        <input id = "signup_comedian_search" type = "search" autocomplete = "on" class = "text_input"></input>
-      </div>
-      <br style = "height: 20px"/>
-      <div>
-        <p class = "form_label">Your Email</p>
-        <input id = "user_email" class = "text_input"></input>
-      </div>
-      <div value = "Submit" id = "form_submit">
-        Submit
-      </div>
-      <!-- list = "comedians" -->
-    </div>
-  </div>
+  {% include "signup.html" %}
 
 <!--   <div class="rTable">
     <div class="rTableRow">
@@ -85,3 +54,4 @@
 {% endblock %}
 
 {% include "libraries.html" %}
+<script type="text/javascript" src="/static/js/homepage.js"></script>

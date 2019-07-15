@@ -20,6 +20,8 @@ import os
 import psycopg2
 import sys
 
+pd.set_option('mode.chained_assignment', None)
+
 #define location dictionary for show_id
 location_dict = {
         "MacDougal Street": "MCD",
