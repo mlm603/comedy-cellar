@@ -4,12 +4,11 @@ const xpadding = 20;
 const ypadding = 40;
 
 
-
 function populate_dash(comedian_name){
   selected_comedian_single_val = summary_stats.filter(d => d.comedian_name === comedian_name)[0]
 
   // month in json is in a weird string format, so parsing it to be mm/dd/yy
-  month_lookup = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'June':'06', 'July':'07', 'Aug':'08', 'Sept':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
+  month_lookup = {'Jan':'01', 'Feb':'02', 'Mar':'03', 'Apr':'04', 'May':'05', 'Jun':'06', 'Jul':'07', 'Aug':'08', 'Sep':'09', 'Oct':'10', 'Nov':'11', 'Dec':'12'}
   mr_show = selected_comedian_single_val.most_recent_show_timestamp
   mr_show_string = mr_show.substring(mr_show.indexOf(',')+2, mr_show.indexOf(':')-3)
   mr_show_arr = mr_show_string.split(' ')
@@ -20,16 +19,20 @@ function populate_dash(comedian_name){
   $("#upcoming_shows_value").text(selected_comedian_single_val.upcoming_shows);
   $("#most_recent_show_value").text(mr_show_final);
 
+  // updating day of week chart
   selected_comedian_day_of_week = day_of_week_stats.filter(d => d.comedian_name === comedian_name)
 
   make_column_chart(dataset = selected_comedian_day_of_week, div = "day_of_week_chart", axis_values = "show_count", fill_color = "#4f2d7f", font_color = "black")
 
+  // updating upcoming shows table
   selected_comedian_upcoming_shows = upcoming_shows.filter(d => d.comedian_name === comedian_name)
 
   add_to_table(selected_comedian_upcoming_shows)
 }
 
 function make_column_chart(dataset, div, axis_values, fill_color, font_color){
+
+  $(".chart_container svg").remove()
 
   var $container = $('.chart_container')
 
@@ -119,7 +122,7 @@ function add_to_table(dataset){
           + "<div class='rTableCell small_cell'>" 
           + months[show_timestamp.getMonth()] + " " + show_timestamp.getDate()
           + "</div><div class='rTableCell small_cell'>" 
-          + show_timestamp.getHours() + ":" + (show_timestamp.getMinutes() == 0 ? "00" : show_timestamp.getMinutes())
+          + ((show_timestamp.getHours() + 4) % 24) + ":" + (show_timestamp.getMinutes() == 0 ? "00" : show_timestamp.getMinutes())
           + "</div><div class='rTableCell small_cell'>" 
           + show.show_day_of_week 
           + "</div><div class='rTableCell small_cell'>" 
@@ -135,4 +138,10 @@ function add_to_table(dataset){
   }
 }
 
+function new_dash(comedian_name){
+  console.log(comedian_name)
+  populate_dash(comedian_name)
+}
+
+$('[id=comedian_selection]').val( 'Judah Friedlander' )
 populate_dash('Judah Friedlander')

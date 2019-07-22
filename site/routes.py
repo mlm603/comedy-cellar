@@ -86,7 +86,7 @@ upcoming_shows = db.session.execute('''
 												SELECT showtime_id
 													, STRING_AGG(comedian_name, ', ' ORDER BY comedian_name) AS comedian_names
 												FROM dim_shows
-												WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date
+												WHERE show_timestamp >= NOW()
 												GROUP BY showtime_id
 											)
 
@@ -101,7 +101,7 @@ upcoming_shows = db.session.execute('''
 											FROM dim_shows
 											LEFT JOIN all_comedians
 												ON dim_shows.showtime_id = all_comedians.showtime_id
-											WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date
+											WHERE show_timestamp >= NOW()
 											ORDER BY show_timestamp ASC;
 										''')
 
