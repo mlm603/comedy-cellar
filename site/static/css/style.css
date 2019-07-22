@@ -107,6 +107,23 @@ main {
   margin-bottom: 20px;
 }
 
+#comedian_selection {
+  width: 100%;
+  margin-bottom: 20px;
+  font-size: 48px;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: #4f2d7f;
+  color: white;
+}
+
+#comedian_selection option {
+  font-size: 12px;
+  background-color: white;
+  color: black;
+}
+
 /* table formatting */
 
 .tableTitle {
