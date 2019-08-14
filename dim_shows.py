@@ -2,7 +2,6 @@ from __future__ import print_function
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
-from sqlalchemy import create_engine
 from pandas import DataFrame
 import pandas as pd
 import numpy as np
@@ -106,8 +105,7 @@ def dim_shows():
     Replace dim_shows in PG
     """
     local_cursor.execute("TRUNCATE TABLE dim_shows;")
-
-    engine = create_engine(HEROKU_DATABASE_URL)
+    
     most_recent_snapshot.to_csv('dim_shows.csv', index = False, header = False)
     sys.stdin = open('dim_shows.csv')
     local_cursor.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
