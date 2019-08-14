@@ -59,14 +59,18 @@ def dim_shows():
     """
     Send emails regarding changes
     """
+
+    LOCAL_DATABASE_URL = "postgresql://localhost/cellar_scraper"
+    HEROKU_DATABASE_URL = sys.argv[1]
     
-    DATABASE_URL = "postgresql://localhost/cellar_scraper"
-    
-    conn = psycopg2.connect(DATABASE_URL)
-    cur = conn.cursor()
+    local_conn = psycopg2.connect(LOCAL_DATABASE_URL)
+    local_cursor = local_conn.cursor()
+
+    heroku_conn = psycopg2.connect(HEROKU_DATABASE_URL)
+    heroku_cursor = heroku_conn.cursor()
 
     # Get existing dim_shows table to determine adds/removals
-    cur.execute("""
+    local_cursor.execute("""
                     SELECT showtime_id AS showtime_id_old
                         , comedian_name AS comedian_name_old
                         , location AS location_old
@@ -75,17 +79,18 @@ def dim_shows():
                     FROM dim_shows
                     WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date;
                 """)
-    dim_shows_old = DataFrame(cur.fetchall())
-    dim_shows_old.columns = [desc[0] for desc in cur.description]
+    dim_shows_old = DataFrame(local_cursor.fetchall())
+    dim_shows_old.columns = [desc[0] for desc in local_cursor.description]
     
+
     # Get subscriptions info
-    cur.execute("""
+    heroku_cursor.execute("""
                     SELECT *
                     FROM dim_subscriptions
                     WHERE unsubscribed_timestamp IS NULL;
                 """)
-    dim_subscriptions = DataFrame(cur.fetchall())
-    dim_subscriptions.columns = [desc[0] for desc in cur.description]
+    dim_subscriptions = DataFrame(heroku_cursor.fetchall())
+    dim_subscriptions.columns = [desc[0] for desc in heroku_cursor.description]
 
     most_recent_snapshot["show_timestamp_v2"] = pd.to_datetime(most_recent_snapshot["show_timestamp"])
 
@@ -93,25 +98,28 @@ def dim_shows():
     
     dim_shows_new = most_recent_snapshot.loc[most_recent_snapshot["show_timestamp_v2"]>=current_date_string]
    
-    trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions)
+    trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions)
 
     most_recent_snapshot = most_recent_snapshot.drop(columns = ["show_timestamp_v2"])
 
     """
     Replace dim_shows in PG
     """
-    cur.execute("TRUNCATE TABLE dim_shows;")
+    local_cursor.execute("TRUNCATE TABLE dim_shows;")
 
-    engine = create_engine(DATABASE_URL)
+    engine = create_engine(HEROKU_DATABASE_URL)
     most_recent_snapshot.to_csv('dim_shows.csv', index = False, header = False)
     sys.stdin = open('dim_shows.csv')
-    cur.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
+    local_cursor.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
-    conn.commit()
-    cur.close()
-    conn.close()
+    local_conn.commit()
+    local_cursor.close()
+    local_conn.close()
 
-def trigger_emails(cur, dim_shows_old, dim_shows_new, dim_subscriptions):
+    heroku_cursor.close()
+    heroku_conn.close()
+
+def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
     """
     Use gmail API to send emails
     """
