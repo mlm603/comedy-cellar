@@ -1,0 +1,41 @@
+{% include "header.html" %}
+
+{% block content %}
+<head>
+    <title>Cellar Scraper</title>
+    <!-- Custom local CSS -->
+    <!-- <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="basic.css"> -->
+    
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+      var email = "{{email}}"
+      var subscriptions = {{ subscriptions|tojson }}
+    </script>
+    <link rel= "stylesheet" type= "text/css" href= "/static/css/trends.css">
+</head>
+<main id="main" style = "overflow-x: hidden">
+
+<div id = "welcome">
+  <h2>Unsubscribe</h2>
+  <p class = "subtitle">
+    Select which emails you would like to unsubscribe from
+  </p>
+</div>
+
+<form>
+  <input type="checkbox" style="margin-bottom: 10px"> All Emails</input>
+  <div>Individual comedians:</div>
+  <div style = "padding-left: 20px">
+    {% for subscription in subscriptions %}
+      <input type="checkbox" value="{{subscription.comedian_name}}"> {{subscription.comedian_name}}</input>
+    {% endfor %}
+  </div>
+  <input type="submit" style="margin-top: 10px" onclick="alert('hi')"></input>
+</form>
+
+</main>
+{% endblock %}
+
+{% include "libraries.html" %}
+<script type="text/javascript" src="/static/js/unsubscribe.js"></script>

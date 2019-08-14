@@ -59,11 +59,10 @@ def dim_shows():
     """
     Send emails regarding changes
     """
-
-    # get PG url from environment variable
-    DATABASE_URL = sys.argv[1]
     
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+    DATABASE_URL = "postgresql://localhost/cellar_scraper"
+    
+    conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
 
     # Get existing dim_shows table to determine adds/removals

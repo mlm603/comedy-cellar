@@ -155,6 +155,22 @@ def trends_index():
 						, upcoming_shows=upcoming_shows
 				)
 
+@app.route('/unsubscribe', methods=['GET','POST'])
+def unsubscribe():
+	email = request.args.get('email')
+	# gets the subscriptions for the email address in the URL
+	subscriptions = db.session.execute('''
+											SELECT DISTINCT *
+											FROM dim_subscriptions
+											WHERE email =
+										'''
+										+ "'" + email + "'")
+	subscriptions = make_dict(subscriptions)
+	return render_template('unsubscribe.html'
+						, email=email
+						, subscriptions=subscriptions
+				)
+
 if __name__ == '__main__':
 	app.run(host=os.getenv('IP', '0.0.0.0'), 
             port=int(os.getenv('PORT', 4444)),
