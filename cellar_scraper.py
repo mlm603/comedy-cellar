@@ -11,16 +11,19 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from googleapiclient.discovery import build
-from httplib2 import Http
-from oauth2client import file, client, tools
 import pandas as pd
+from pandas import DataFrame
 from dim_shows import dim_shows
 import os
 import psycopg2
 import sys
 
 pd.set_option('mode.chained_assignment', None)
+
+LOCAL_DATABASE_URL = "postgresql://localhost/cellar_scraper"
+
+local_conn = psycopg2.connect(LOCAL_DATABASE_URL)
+local_cursor = local_conn.cursor()
 
 #define location dictionary for show_id
 location_dict = {
@@ -53,27 +56,6 @@ soup = BeautifulSoup(innerHTML, 'html.parser')
 
 new_values = []
 showtime_ids = []
-
-"""
-Setting up gsheet API
-"""
-
-# If modifying these scopes, delete the file token.json.
-scopes = 'https://www.googleapis.com/auth/spreadsheets'
-
-# The ID and range of a sample spreadsheet.
-gsheet_id = '1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk'
-gsheet_range = 'fact_shows!A2:D2'
-
-# The file token.json stores the user's access and refresh tokens, and is
-# created automatically when the authorization flow completes for the first
-# time.
-store = file.Storage('token.json')
-creds = store.get()
-if not creds or creds.invalid:
-    flow = client.flow_from_clientsecrets('credentials.json', scopes)
-    creds = tools.run_flow(flow, store)
-service = build('sheets', 'v4', http=creds.authorize(Http()))
 
 """
 Get most recent show snapshots 
@@ -136,6 +118,8 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
                 comedian_description = raw_comedian_description[:-13].lstrip().replace("\t", "")
             else:
                 comedian_description = raw_comedian_description.lstrip().replace("\t", "")
+
+            comedian_description = comedian_description[:255]
             
             comedian_value = [
                                 showtime_id
@@ -155,45 +139,32 @@ for day in range(len(soup.find('form', attrs = {'id':'filter-lineup-shows-form'}
 Update is_most_recent_timestamp flags in existing 
 """
 
-gsheet_read_range = 'fact_shows'
-sheet = service.spreadsheets()
-result = sheet.values().get(spreadsheetId=gsheet_id,
-                            range=gsheet_read_range).execute()
-old_values = result.get('values', [])
-df = pd.DataFrame(old_values[1:], columns=old_values[0])
+local_cursor.execute("""
+                    SELECT *
+                    FROM fact_shows;
+                """)
+fact_shows_old = DataFrame(local_cursor.fetchall())
+fact_shows_old.columns = [desc[0] for desc in local_cursor.description]
 
 #where existing is_most_recent_timestamp is TRUE and showtime_id is in showtime_ids
 #set is_most_recent_timestamp to TRUE
-mr_snapshot_rows = df.loc[df['is_most_recent_snapshot'] == "TRUE"]
-mr_snapshot_rows_replace = mr_snapshot_rows.loc[mr_snapshot_rows['showtime_id'].isin(showtime_ids)]
-mr_index_values = mr_snapshot_rows_replace.index.values
-data = []
-for r in range(len(mr_index_values)):
-    update_row = {}
-    update_row['range'] = 'fact_shows!I' + str(mr_index_values[r] + 2)
-    update_row['values'] = [[False]]
-    data.append(update_row)
-    
-body = {
-    'valueInputOption': "USER_ENTERED",
-    'data': data
-}
 
-result = service.spreadsheets().values().batchUpdate(
-    spreadsheetId=gsheet_id, body=body).execute()
+showtime_ids = "', '".join(showtime_ids)
 
-    
+local_cursor.execute("""
+                    UPDATE fact_shows
+                    SET is_most_recent_snapshot = FALSE 
+                    WHERE showtime_id IN ('
+                """ + showtime_ids + "');")
 
-"""
-Push new row to gsheet
-"""
+local_conn.commit()
 
-body = {
-    'values': new_values
-}
-result = service.spreadsheets().values().append(
-    spreadsheetId=gsheet_id, range=gsheet_range,
-    valueInputOption="USER_ENTERED", body=body).execute()
+new_values_df = pd.DataFrame(new_values, columns=['showtime_id', 'snapshot_timestamp', 'show_day_of_week', 'show_timestamp', 'location', 'is_mc', 'comedian_name', 'comedian_description', 'is_most_recent_snapshot'])
+
+new_filename = 'fact_shows/' + str(snapshot_timestamp.date()).replace("-","_") + '.csv'
+new_values_df.to_csv(new_filename, index = False, header = False)
+sys.stdin = open(new_filename)
+local_cursor.copy_expert("COPY fact_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
 browser.quit()
 
