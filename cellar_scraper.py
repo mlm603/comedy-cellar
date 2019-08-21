@@ -166,6 +166,10 @@ new_values_df.to_csv(new_filename, index = False, header = False)
 sys.stdin = open(new_filename)
 local_cursor.copy_expert("COPY fact_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
+local_conn.commit()
+local_cursor.close()
+local_conn.close()
+
 browser.quit()
 
 dim_shows()

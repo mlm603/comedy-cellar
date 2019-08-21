@@ -21,44 +21,10 @@ import base64
 def dim_shows():
 
     pd.set_option('mode.chained_assignment', None)
-    
 
     """
-    Use gsheet API to get fact_shows and use to create new dim_shows
+    Establish connections to local and heroku dbs
     """
-    # If modifying these scopes, delete the file token.json.
-    scopes = 'https://www.googleapis.com/auth/spreadsheets'
-
-    # The ID and range of a sample spreadsheet.
-    gsheet_id = '1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk'
-    fact_shows = 'fact_shows'
-    dim_shows = 'dim_shows!A2'
-
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    store = file.Storage('token.json')
-    creds = store.get()
-    if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', scopes)
-        creds = tools.run_flow(flow, store)
-    service = build('sheets', 'v4', http=creds.authorize(Http()))
-
-    # Call the Sheets API
-    sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=gsheet_id,
-                                range=fact_shows).execute()
-    values = result.get('values', [])
-
-    df = pd.DataFrame(values[1:], columns=values[0])
-    most_recent_snapshot = df.loc[df['is_most_recent_snapshot'] == "TRUE"]
-    most_recent_snapshot = most_recent_snapshot.drop(columns = ['is_most_recent_snapshot'])
-    most_recent_snapshot['comedian_description'] = most_recent_snapshot['comedian_description'].str.slice(0, 252)
-
-    """
-    Send emails regarding changes
-    """
-
     LOCAL_DATABASE_URL = "postgresql://localhost/cellar_scraper"
     HEROKU_DATABASE_URL = sys.argv[1]
     
@@ -67,6 +33,23 @@ def dim_shows():
 
     heroku_conn = psycopg2.connect(HEROKU_DATABASE_URL)
     heroku_cursor = heroku_conn.cursor()
+
+    """
+    Get most recent snapshot from fact_shows
+    """
+    local_cursor.execute("""
+                    SELECT *
+                    FROM fact_shows
+                    WHERE is_most_recent_snapshot;
+                """)
+    most_recent_snapshot = DataFrame(local_cursor.fetchall())
+    most_recent_snapshot.columns = [desc[0] for desc in local_cursor.description]
+    most_recent_snapshot = most_recent_snapshot.drop(columns = ['is_most_recent_snapshot'])
+
+
+    """
+    Send emails regarding changes
+    """
 
     # Get existing dim_shows table to determine adds/removals
     local_cursor.execute("""
@@ -105,7 +88,7 @@ def dim_shows():
     Replace dim_shows in PG
     """
     local_cursor.execute("TRUNCATE TABLE dim_shows;")
-    
+
     most_recent_snapshot.to_csv('dim_shows.csv', index = False, header = False)
     sys.stdin = open('dim_shows.csv')
     local_cursor.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
@@ -167,7 +150,7 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
     deltasDF['showtime_id_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.showtime_id, deltasDF.showtime_id_old)
     deltasDF['comedian_name_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.comedian_name, deltasDF.comedian_name_old)
     deltasDF['location_clean'] = np.where(deltasDF.location_old.isnull(), deltasDF.location, deltasDF.location_old)
-    deltasDF['show_timestamp_clean'] = np.where(deltasDF.show_timestamp_old.isnull(), deltasDF.show_timestamp, deltasDF.show_timestamp_old)
+    deltasDF['show_timestamp_clean'] = pd.to_datetime(np.where(deltasDF.show_timestamp_old.isnull(), deltasDF.show_timestamp, deltasDF.show_timestamp_old))
     deltasDF['show_day_of_week_clean'] = np.where(deltasDF.show_day_of_week_old.isnull(), deltasDF.show_day_of_week, deltasDF.show_day_of_week_old)
     deltasDF = deltasDF[['showtime_id_clean', 'comedian_name_clean', 'location_clean', 'show_timestamp_clean', 'show_day_of_week_clean', 'comedian_show_status']]
     deltasDF.columns = ['showtime_id', 'comedian_name_temp', 'location', 'show_timestamp', 'show_day_of_week', 'comedian_show_status']
@@ -197,9 +180,10 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
                 show_adds = adds.loc[adds['comedian_name'] == comedian]
                 message += ('<br/><br/><b>' + comedian + '</b> was <b>added</b> to the following shows:')
                 for index, row in show_adds.iterrows():
+                    print(row)
                     message += (
                                 '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
-                                datetime.datetime.strptime(row['show_timestamp'], '%m/%d/%Y %H:%M:%S').strftime('%B %d %H:%M')
+                                row['show_timestamp'].strftime('%B %d %H:%M')
                                 + ' at ' + row['location']
                               )
             drops = triggered_emailsDF.loc[(triggered_emailsDF['comedian_show_status'] == 'removed') & (triggered_emailsDF['email'] == subscriber)]
@@ -210,7 +194,7 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
                 for index, row in show_drops.iterrows():
                     message += (
                                 '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
-                                datetime.datetime.strptime(row['show_timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%B %d %H:%M')
+                                row['show_timestamp'].strftime('%B %d %H:%M')
                                 + ' at ' + row['location']
                               )
             message = MIMEText(message, 'html')
