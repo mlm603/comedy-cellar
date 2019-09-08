@@ -12,3 +12,4 @@ dim_comedian_dow_stats
 dim_comedian_stats
 dim_upcoming_shows
 dim_shows
+dim_subscriptions

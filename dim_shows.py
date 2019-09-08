@@ -91,10 +91,12 @@ def dim_shows(snapshot_date_string):
     heroku_cursor.execute("""
                     SELECT *
                     FROM dim_subscriptions
-                    WHERE unsubscribed_timestamp IS NULL;
                 """)
     dim_subscriptions = DataFrame(heroku_cursor.fetchall())
     dim_subscriptions.columns = [desc[0] for desc in heroku_cursor.description]
+    active_subscriptions = dim_subscriptions.loc[dim_subscriptions.unsubscribed_timestamp.isnull()]
+    # Replace dim_subscriptions in local psql
+    update_dim_table(table_name = "dim_subscriptions", df_or_query = dim_subscriptions)
 
     most_recent_snapshot["show_timestamp_v2"] = pd.to_datetime(most_recent_snapshot["show_timestamp"])
 
@@ -102,11 +104,11 @@ def dim_shows(snapshot_date_string):
     
     dim_shows_new = most_recent_snapshot.loc[most_recent_snapshot["show_timestamp_v2"]>=current_date_string]
    
-    trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions)
+    trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions)
 
     most_recent_snapshot = most_recent_snapshot.drop(columns = ["show_timestamp_v2"])
 
-    # Replace dim_shows in PG
+    # Replace dim_shows in local psql
     update_dim_table(table_name = "dim_shows", df_or_query = most_recent_snapshot)
 
     # Generate new dim_comedian_stats based on latest dim_shows
@@ -196,7 +198,7 @@ def dim_shows(snapshot_date_string):
 
 
 
-def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
+def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
     """
     Use gmail API to send emails
     """
@@ -252,7 +254,7 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
     deltasDF.columns = ['showtime_id', 'comedian_name_temp', 'location', 'show_timestamp', 'show_day_of_week', 'comedian_show_status']
     
     # merge deltas with subscriptions to determine what alerts need to be sent
-    triggered_emailsDF = dim_subscriptions.merge(
+    triggered_emailsDF = active_subscriptions.merge(
                                     deltasDF
                                     , left_on = ['comedian_name']
                                     , right_on = ['comedian_name_temp']
@@ -263,7 +265,7 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
 
     triggered_emails_count = triggered_emailsDF.shape[0]
 
-    subscribers = dim_subscriptions.email.unique()
+    subscribers = active_subscriptions.email.unique()
 
     # loop through subscribers to generate an email for each subscriber
     if triggered_emails_count > 0:
