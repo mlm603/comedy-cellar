@@ -8,14 +8,22 @@ from flask import jsonify
 from datetime import datetime
 import pytz
 import json
+import os
 
 app = Flask(__name__)
 
 
 # CONFIG
 # app.config.from_object(os.environ['APP_SETTINGS'])
+if os.environ['FLASK_ENVIRONMENT'] == 'development':
+	print("Using local PSQL db")
+	app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/cellar_scraper'
+else:
+	print("Using heroku PSQL db")
+	app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://skxjhchskeyqbl:b585bb38c72985b4355e8bdd8c918323922df4b33b1eb92efba3d40274669a90@ec2-50-19-255-235.compute-1.amazonaws.com:5432/da95kjkflf2okv'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/mlm603'
+# if sys.argv[1] == "staging":
+# else:
 
 db = SQLAlchemy(app)
 
@@ -25,84 +33,46 @@ db.init_app(app)
 
 frequent_comedians = db.session.execute('''
 											SELECT comedian_name
-												, count(*)::integer AS show_count
-											FROM dim_shows
-											GROUP BY comedian_name
-											ORDER BY count(*) DESC
+												, show_count
+											FROM dim_comedian_stats
+											ORDER BY show_count DESC
 											LIMIT 10				
 										''')
 
 unique_comedians = db.session.execute('''
 											SELECT DISTINCT comedian_name
-											FROM dim_shows
+											FROM dim_comedian_stats
 											ORDER BY comedian_name ASC		
 										''')
 
 dry_spell_comedians = db.session.execute('''
 											SELECT comedian_name
-											  , MAX(show_timestamp) AS last_show
-											  , DATE_PART('day', NOW() - MAX(show_timestamp)) AS days_since_last_show
-											FROM dim_shows 
+											  , last_show
+											  , days_since_last_show
+											FROM dim_comedian_stats
 											WHERE comedian_name <> 'MORE TO BE ANNOUNCED'
-											GROUP BY 1 
 											ORDER BY 3 desc
-											LIMIT 10;
+											LIMIT 10
 										''')
 
 summary_stats = db.session.execute('''
 											SELECT comedian_name
-												, COUNT(DISTINCT 
-													CASE WHEN show_timestamp < NOW() 
-													THEN showtime_id
-													END
-												  ) AS previous_shows
-												, COUNT(DISTINCT
-													CASE WHEN show_timestamp >= NOW()
-													THEN showtime_id
-													END
-												  ) AS upcoming_shows
-												, MAX(
-													CASE WHEN show_timestamp < NOW()
-													THEN show_timestamp
-													END
-												  ) AS most_recent_show_timestamp
-											FROM dim_shows
-											GROUP BY comedian_name ;
+												, previous_shows
+												, upcoming_shows
+												, most_recent_show_timestamp
+											FROM dim_comedian_stats
 										''')
 
 day_of_week_stats = db.session.execute('''
 											SELECT comedian_name
 												, show_day_of_week
-												, COUNT(DISTINCT
-													showtime_id
-												  ) AS show_count
-											FROM dim_shows
-											GROUP BY comedian_name
-												, show_day_of_week ;
+												, show_count
+											FROM dim_comedian_dow_stats
 										''')
 
 upcoming_shows = db.session.execute('''
-											WITH all_comedians AS (
-												SELECT showtime_id
-													, STRING_AGG(comedian_name, ', ' ORDER BY comedian_name) AS comedian_names
-												FROM dim_shows
-												WHERE show_timestamp >= NOW()
-												GROUP BY showtime_id
-											)
-
-											SELECT dim_shows.showtime_id
-												, comedian_name
-												, show_day_of_week
-												, show_timestamp
-												, location
-												, CONCAT(SUBSTRING(comedian_names FROM 0 FOR POSITION(comedian_name IN comedian_names)), 
-													 SUBSTRING(comedian_names FROM (POSITION(comedian_name IN comedian_names) + CHAR_LENGTH(comedian_name) + 2))
-												) AS other_comedians
-											FROM dim_shows
-											LEFT JOIN all_comedians
-												ON dim_shows.showtime_id = all_comedians.showtime_id
-											WHERE show_timestamp >= NOW()
-											ORDER BY show_timestamp ASC;
+											SELECT *
+											FROM dim_upcoming_shows
 										''')
 
 

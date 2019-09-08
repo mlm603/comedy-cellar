@@ -35,8 +35,9 @@ location_dict = {
 #get timestamp of snapshot
 snapshot_timestamp = datetime.now(pytz.timezone('US/Eastern'))
 print (snapshot_timestamp)
+snapshot_date_string = str(snapshot_timestamp.date()).replace("-","_")
 
-#set up logging file to record all data collected and any errors
+# set up logging file to record all data collected and any errors
 logging.basicConfig(filename='cellar_scraper.log',level=logging.DEBUG)
 
 #set url
@@ -161,7 +162,7 @@ local_conn.commit()
 
 new_values_df = pd.DataFrame(new_values, columns=['showtime_id', 'snapshot_timestamp', 'show_day_of_week', 'show_timestamp', 'location', 'is_mc', 'comedian_name', 'comedian_description', 'is_most_recent_snapshot'])
 
-new_filename = 'fact_shows/' + str(snapshot_timestamp.date()).replace("-","_") + '.csv'
+new_filename = 'fact_shows/' + snapshot_date_string + '.csv'
 new_values_df.to_csv(new_filename, index = False, header = False)
 sys.stdin = open(new_filename)
 local_cursor.copy_expert("COPY fact_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
@@ -172,7 +173,7 @@ local_conn.close()
 
 browser.quit()
 
-dim_shows()
+dim_shows(snapshot_date_string)
 
 
 

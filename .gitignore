@@ -8,3 +8,7 @@ gmail_credentials.json
 token.pickle
 test.py
 fact_shows
+dim_comedian_dow_stats
+dim_comedian_stats
+dim_upcoming_shows
+dim_shows

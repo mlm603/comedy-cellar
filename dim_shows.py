@@ -18,7 +18,7 @@ from email.mime.text import MIMEText
 import base64
 
 
-def dim_shows():
+def dim_shows(snapshot_date_string):
 
     pd.set_option('mode.chained_assignment', None)
 
@@ -33,6 +33,28 @@ def dim_shows():
 
     heroku_conn = psycopg2.connect(HEROKU_DATABASE_URL)
     heroku_cursor = heroku_conn.cursor()
+
+    """
+    Internal function to generate new [dim_table]
+    """
+    def update_dim_table(table_name, df_or_query, write_to_heroku = False):
+        if isinstance(df_or_query, pd.DataFrame):
+            table = df_or_query
+        else:
+            local_cursor.execute(df_or_query)
+            table = DataFrame(local_cursor.fetchall())
+            table.columns = [desc[0] for desc in local_cursor.description]
+
+        local_cursor.execute("TRUNCATE TABLE " + table_name + ";")
+
+        new_filename = table_name + "/" + snapshot_date_string + '.csv'
+        table.to_csv(new_filename, index = False, header = False)
+        sys.stdin = open(new_filename)
+        local_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
+
+        if write_to_heroku:
+            sys.stdin = open(new_filename)
+            heroku_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
     """
     Get most recent snapshot from fact_shows
@@ -84,21 +106,95 @@ def dim_shows():
 
     most_recent_snapshot = most_recent_snapshot.drop(columns = ["show_timestamp_v2"])
 
-    """
-    Replace dim_shows in PG
-    """
-    local_cursor.execute("TRUNCATE TABLE dim_shows;")
+    # Replace dim_shows in PG
+    update_dim_table(table_name = "dim_shows", df_or_query = most_recent_snapshot)
 
-    most_recent_snapshot.to_csv('dim_shows.csv', index = False, header = False)
-    sys.stdin = open('dim_shows.csv')
-    local_cursor.copy_expert("COPY dim_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
+    # Generate new dim_comedian_stats based on latest dim_shows
+    update_dim_table(
+        table_name = "dim_comedian_stats"
+        , df_or_query = 
+            """
+                SELECT comedian_name
+                    , COUNT(*)::integer AS show_count
+                    , MAX(show_timestamp) AS last_show
+                    , DATE_PART('day', NOW() - MAX(show_timestamp))::integer AS days_since_last_show
+                    , COUNT(DISTINCT 
+                        CASE WHEN show_timestamp < NOW() 
+                        THEN showtime_id
+                        END
+                      )::integer AS previous_shows
+                    , COUNT(DISTINCT
+                        CASE WHEN show_timestamp >= NOW()
+                        THEN showtime_id
+                        END
+                      )::integer AS upcoming_shows
+                    , MAX(
+                        CASE WHEN show_timestamp < NOW()
+                        THEN show_timestamp
+                        END
+                      ) AS most_recent_show_timestamp
+                FROM dim_shows
+                GROUP BY comedian_name
+            """
+        , write_to_heroku = True
+    )
+
+    # Generate new dim_comedian_dow_stats based on latest dim_shows
+    update_dim_table(
+        table_name = "dim_comedian_dow_stats"
+        , df_or_query = 
+            """
+                SELECT comedian_name
+                    , show_day_of_week
+                    , COUNT(DISTINCT
+                        showtime_id
+                      ) AS show_count
+                FROM dim_shows
+                GROUP BY comedian_name
+                    , show_day_of_week
+            """
+        , write_to_heroku = True
+    )
+
+    # Generate new dim_upcoming_shows based on latest dim_shows
+    update_dim_table(
+        table_name = "dim_upcoming_shows"
+        , df_or_query = 
+            """
+                WITH all_comedians AS (
+                    SELECT showtime_id
+                        , STRING_AGG(comedian_name, ', ' ORDER BY comedian_name) AS comedian_names
+                    FROM dim_shows
+                    WHERE show_timestamp >= NOW()
+                    GROUP BY showtime_id
+                )
+
+                SELECT dim_shows.showtime_id
+                    , comedian_name
+                    , show_day_of_week
+                    , show_timestamp
+                    , location
+                    , CONCAT(SUBSTRING(comedian_names FROM 0 FOR POSITION(comedian_name IN comedian_names)), 
+                         SUBSTRING(comedian_names FROM (POSITION(comedian_name IN comedian_names) + CHAR_LENGTH(comedian_name) + 2))
+                    ) AS other_comedians
+                FROM dim_shows
+                LEFT JOIN all_comedians
+                    ON dim_shows.showtime_id = all_comedians.showtime_id
+                WHERE show_timestamp >= NOW()
+                ORDER BY show_timestamp ASC
+            """
+        , write_to_heroku = True
+    )
 
     local_conn.commit()
     local_cursor.close()
     local_conn.close()
 
+    heroku_conn.commit()
     heroku_cursor.close()
     heroku_conn.close()
+
+
 
 def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
     """
@@ -180,7 +276,6 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
                 show_adds = adds.loc[adds['comedian_name'] == comedian]
                 message += ('<br/><br/><b>' + comedian + '</b> was <b>added</b> to the following shows:')
                 for index, row in show_adds.iterrows():
-                    print(row)
                     message += (
                                 '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
                                 row['show_timestamp'].strftime('%B %d %H:%M')
@@ -207,6 +302,3 @@ def trigger_emails(dim_shows_old, dim_shows_new, dim_subscriptions):
                        .execute())
     else:
         print('no changes')
-
-
-dim_shows()
