@@ -127,22 +127,41 @@ def trends_index():
 
 @app.route('/unsubscribe', methods=['GET','POST'])
 def unsubscribe():
-	email = request.args.get('email')
-	# gets the subscriptions for the email address in the URL
-	subscriptions = db.session.execute('''
-											SELECT DISTINCT *
-											FROM dim_subscriptions
-											WHERE email =
-										'''
-										+ "'" + email + "'")
-	subscriptions = make_dict(subscriptions)
-	return render_template('unsubscribe.html'
-						, email=email
-						, subscriptions=subscriptions
-				)
+	if request.method == 'POST':
+		print("posting")
+		unsubscribed_timestamp = datetime.now(pytz.timezone('US/Eastern')).strftime('%Y-%m-%d %H:%M:%S.%f')
+		unsubscribe_comeds = request.get_json()
+		print(unsubscribe_comeds)
+		email = unsubscribe_comeds['email']
+		comedians = unsubscribe_comeds['comedians']
+		for comedian_name in comedians:
+			statement = "UPDATE dim_subscriptions SET unsubscribed_timestamp = '" + unsubscribed_timestamp + "' WHERE email = '" + email + "' AND comedian_name = '" + comedian_name + "'; "
+			print(statement)
+			db.session.execute(statement)
+			db.session.commit()
+		return redirect(url_for('unsubscribe_success'))
+	else:
+		email = request.args.get('email')
+		# gets the subscriptions for the email address in the URL
+		subscriptions = db.session.execute('''
+												SELECT DISTINCT *
+												FROM dim_subscriptions
+												WHERE unsubscribed_timestamp IS NULL
+													AND email =
+											'''
+											+ "'" + email + "'")
+		subscriptions = make_dict(subscriptions)
+		return render_template('unsubscribe.html'
+							, email=email
+							, subscriptions=subscriptions
+					)
 
 if __name__ == '__main__':
 	app.run(host=os.getenv('IP', '0.0.0.0'), 
             port=int(os.getenv('PORT', 4444)),
             debug=True
             )
+
+@app.route('/unsubscribe_success', methods=['GET'])
+def unsubscribe_success():
+	return render_template('unsubscribe_success.html')

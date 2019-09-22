@@ -24,14 +24,16 @@
 </div>
 
 <form>
-  <input type="checkbox" style="margin-bottom: 10px"> All Emails</input>
+  <input type="checkbox" style="margin-bottom: 10px" value="all" id="all_comeds"> All Emails</input>
   <div>Individual comedians:</div>
-  <div style = "padding-left: 20px">
-    {% for subscription in subscriptions %}
-      <input type="checkbox" value="{{subscription.comedian_name}}"> {{subscription.comedian_name}}</input>
-    {% endfor %}
-  </div>
-  <input type="submit" style="margin-top: 10px" onclick="alert('hi')"></input>
+
+  {% for subscription in subscriptions %}
+    <div style = "padding-left: 20px">
+      <input type="checkbox" value="{{subscription.comedian_name}}" class="individ_comed"> {{subscription.comedian_name}}</input>
+    </div>
+  {% endfor %}
+  
+  <div style="margin-top: 10px; background-color: black; color: white" id="unsubscribe_submit">Submit</div>
 </form>
 
 </main>

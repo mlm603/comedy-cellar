@@ -13,3 +13,5 @@ dim_comedian_stats
 dim_upcoming_shows
 dim_shows
 dim_subscriptions
+.DS_Store
+/site/.DS_Store
