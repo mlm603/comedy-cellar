@@ -294,6 +294,8 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
                                 row['show_timestamp'].strftime('%B %d %H:%M')
                                 + ' at ' + row['location']
                               )
+            # unsubscribe link CHANGE TO PUBLIC URL WHEN HOSTED
+            message += '<br/><br/></br>Click <a href="http://127.0.0.1:5000/unsubscribe?email=' + subscriber + '">here</a> to unsubscribe from all emails or specific comedians'
             message = MIMEText(message, 'html')
             message['to'] = subscriber
             message['from'] = 'cellarscraper@gmail.com'
