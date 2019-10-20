@@ -3,12 +3,13 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 from pandas import DataFrame
+from datetime import datetime
+import pytz
 import pandas as pd
 import numpy as np
 import os
 import psycopg2
 import sys
-import datetime
 import json
 import pickle
 import os.path
@@ -52,9 +53,13 @@ def dim_shows(snapshot_date_string):
         sys.stdin = open(new_filename)
         local_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
+        print('updated table ' + table_name + ' locally')
+
         if write_to_heroku:
+            heroku_cursor.execute("TRUNCATE TABLE " + table_name + ";")
             sys.stdin = open(new_filename)
             heroku_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
+            print('updated table ' + table_name + ' on heroku')
 
     """
     Get most recent snapshot from fact_shows
@@ -67,6 +72,9 @@ def dim_shows(snapshot_date_string):
     most_recent_snapshot = DataFrame(local_cursor.fetchall())
     most_recent_snapshot.columns = [desc[0] for desc in local_cursor.description]
     most_recent_snapshot = most_recent_snapshot.drop(columns = ['is_most_recent_snapshot'])
+
+    # Replace dim_shows in local psql
+    update_dim_table(table_name = "dim_shows", df_or_query = most_recent_snapshot)
 
 
     """
@@ -100,16 +108,13 @@ def dim_shows(snapshot_date_string):
 
     most_recent_snapshot["show_timestamp_v2"] = pd.to_datetime(most_recent_snapshot["show_timestamp"])
 
-    current_date_string = datetime.datetime.now().strftime("%Y-%m-%d")
+    current_date_string = datetime.now().strftime("%Y-%m-%d")
     
     dim_shows_new = most_recent_snapshot.loc[most_recent_snapshot["show_timestamp_v2"]>=current_date_string]
    
     trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions)
 
     most_recent_snapshot = most_recent_snapshot.drop(columns = ["show_timestamp_v2"])
-
-    # Replace dim_shows in local psql
-    update_dim_table(table_name = "dim_shows", df_or_query = most_recent_snapshot)
 
     # Generate new dim_comedian_stats based on latest dim_shows
     update_dim_table(
@@ -306,3 +311,5 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
                        .execute())
     else:
         print('no changes')
+
+# dim_shows(str(datetime.now(pytz.timezone('US/Eastern')).date()).replace("-","_"))
