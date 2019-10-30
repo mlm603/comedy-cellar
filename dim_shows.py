@@ -17,9 +17,18 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from email.mime.text import MIMEText
 import base64
+import logging
+import json_log_formatter
 
 
 def dim_shows(snapshot_date_string):
+    formatter = json_log_formatter.JSONFormatter()
+    json_handler = logging.FileHandler(filename='var/log/email-logs.json')
+    json_handler.setFormatter(formatter)
+
+    logger = logging.getLogger(__name__)
+    logger.addHandler(json_handler)
+    logger.setLevel(logging.INFO)
 
     pd.set_option('mode.chained_assignment', None)
 
@@ -53,13 +62,13 @@ def dim_shows(snapshot_date_string):
         sys.stdin = open(new_filename)
         local_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
-        print('updated table ' + table_name + ' locally')
+        logger.info('updated table ' + table_name + ' locally')
 
         if write_to_heroku:
             heroku_cursor.execute("TRUNCATE TABLE " + table_name + ";")
             sys.stdin = open(new_filename)
             heroku_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
-            print('updated table ' + table_name + ' on heroku')
+            logger.info('updated table ' + table_name + ' on heroku')
 
     """
     Get most recent snapshot from fact_shows
@@ -204,6 +213,7 @@ def dim_shows(snapshot_date_string):
 
 
 def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
+    logger = logging.getLogger(__name__)
     """
     Use gmail API to send emails
     """
@@ -270,6 +280,8 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
 
     triggered_emails_count = triggered_emailsDF.shape[0]
 
+    logger.info("Emails triggered: " + str(triggered_emails_count))
+
     subscribers = active_subscriptions.email.unique()
 
     # loop through subscribers to generate an email for each subscriber
@@ -309,7 +321,8 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
 
             message2 = (service.users().messages().send(userId='me', body=message)
                        .execute())
+            logger.info('Email sent to %s', 'subscriber')
     else:
-        print('no changes')
+        logger.info('No changes triggered emails')
 
-# dim_shows(str(datetime.now(pytz.timezone('US/Eastern')).date()).replace("-","_"))
+dim_shows(str(datetime.now(pytz.timezone('US/Eastern')).date()).replace("-","_"))
