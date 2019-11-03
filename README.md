@@ -31,7 +31,7 @@ Each night when the script runs (7pm ET), if there are any new shows added for t
 
 # System Overview
 
-![system diagram](https://github.com/mlm603/comedy-cellar/blob/master/pictures/system_diagram.png)
+![system diagram](https://github.com/mlm603/comedy-cellar/blob/master/pictures/system_diagram_updated.png)
 
 # Additional links
 
