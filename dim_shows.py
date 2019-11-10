@@ -70,6 +70,19 @@ def dim_shows(snapshot_date_string):
             heroku_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
             logger.info('updated table ' + table_name + ' on heroku')
 
+    # Get existing dim_shows table to determine adds/removals
+    local_cursor.execute("""
+                    SELECT showtime_id AS showtime_id_old
+                        , comedian_name AS comedian_name_old
+                        , location AS location_old
+                        , show_timestamp::varchar(255) AS show_timestamp_old
+                        , show_day_of_week AS show_day_of_week_old
+                    FROM dim_shows
+                    WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date;
+                """)
+    dim_shows_old = DataFrame(local_cursor.fetchall())
+    dim_shows_old.columns = [desc[0] for desc in local_cursor.description]
+
     """
     Get most recent snapshot from fact_shows
     """
@@ -84,25 +97,6 @@ def dim_shows(snapshot_date_string):
 
     # Replace dim_shows in local psql
     update_dim_table(table_name = "dim_shows", df_or_query = most_recent_snapshot)
-
-
-    """
-    Send emails regarding changes
-    """
-
-    # Get existing dim_shows table to determine adds/removals
-    local_cursor.execute("""
-                    SELECT showtime_id AS showtime_id_old
-                        , comedian_name AS comedian_name_old
-                        , location AS location_old
-                        , show_timestamp::varchar(255) AS show_timestamp_old
-                        , show_day_of_week AS show_day_of_week_old
-                    FROM dim_shows
-                    WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date;
-                """)
-    dim_shows_old = DataFrame(local_cursor.fetchall())
-    dim_shows_old.columns = [desc[0] for desc in local_cursor.description]
-    
 
     # Get subscriptions info
     heroku_cursor.execute("""
@@ -276,7 +270,7 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
                                     , how = 'inner'
                                 )
 
-    triggered_emailsDF = triggered_emailsDF.loc[triggered_emailsDF['comedian_show_status'].isnull() == False]
+    triggered_emailsDF = triggered_emailsDF.loc[triggered_emailsDF['comedian_show_status'].isnull() == False]    
 
     triggered_emails_count = triggered_emailsDF.shape[0]
 
@@ -325,4 +319,4 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
     else:
         logger.info('No changes triggered emails')
 
-dim_shows(str(datetime.now(pytz.timezone('US/Eastern')).date()).replace("-","_"))
+# dim_shows(str(datetime.now(pytz.timezone('US/Eastern')).date()).replace("-","_"))

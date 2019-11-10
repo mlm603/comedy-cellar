@@ -19,7 +19,7 @@ DATABASE_URL = sys.argv[1]
 email = sys.argv[2] # this should be a string
 comedian_names = sys.argv[3] # this should be a string of comma separated strings (e.g. "'comedian1','comedian2'")
 
-conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+conn = psycopg2.connect(DATABASE_URL)
 cur = conn.cursor()
 
 # Get existing dim_shows table to determine adds/removals
@@ -29,7 +29,7 @@ cur.execute("""
                     , location
                     , show_timestamp::varchar(255)
                     , show_day_of_week
-                FROM dim_shows
+                FROM dim_upcoming_shows
                 WHERE comedian_name IN (""" + comedian_names + ")"
             + """
                     AND show_timestamp>=current_date;
