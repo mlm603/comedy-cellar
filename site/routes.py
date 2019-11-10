@@ -9,6 +9,7 @@ from datetime import datetime
 import pytz
 import json
 import os
+from signups import signup_email
 
 app = Flask(__name__)
 
@@ -110,6 +111,7 @@ def index():
 			statement = "INSERT INTO dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')"
 			db.session.execute(statement)
 			db.session.commit()
+		signup_email(email, comedians)
 	return render_template('home_page_index.html'
 						, frequent_comedians=frequent_comedians_results
 						, unique_comedians=unique_comedians_results
@@ -128,10 +130,8 @@ def trends_index():
 @app.route('/unsubscribe', methods=['GET','POST'])
 def unsubscribe():
 	if request.method == 'POST':
-		print("posting")
 		unsubscribed_timestamp = datetime.now(pytz.timezone('US/Eastern')).strftime('%Y-%m-%d %H:%M:%S.%f')
 		unsubscribe_comeds = request.get_json()
-		print(unsubscribe_comeds)
 		email = unsubscribe_comeds['email']
 		comedians = unsubscribe_comeds['comedians']
 		for comedian_name in comedians:
