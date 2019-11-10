@@ -21,7 +21,7 @@ if os.environ['FLASK_ENVIRONMENT'] == 'development':
 	app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/cellar_scraper'
 else:
 	print("Using heroku PSQL db")
-	app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://skxjhchskeyqbl:b585bb38c72985b4355e8bdd8c918323922df4b33b1eb92efba3d40274669a90@ec2-50-19-255-235.compute-1.amazonaws.com:5432/da95kjkflf2okv'
+	app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL = os.environ['DATABASE_URL']
 
 # if sys.argv[1] == "staging":
 # else:

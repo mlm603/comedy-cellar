@@ -21,7 +21,7 @@ def signup_email(email, comedian_names):
         DATABASE_URL = 'postgresql://localhost/cellar_scraper'
     else:
         print("Using heroku PSQL db")
-        DATABASE_URL = 'postgres://skxjhchskeyqbl:b585bb38c72985b4355e8bdd8c918323922df4b33b1eb92efba3d40274669a90@ec2-50-19-255-235.compute-1.amazonaws.com:5432/da95kjkflf2okv'
+        DATABASE_URL = os.environ['DATABASE_URL']
 
     conn = psycopg2.connect(DATABASE_URL)
     cur = conn.cursor()
