@@ -144,7 +144,7 @@ def unsubscribe():
 		email = request.args.get('email')
 		# gets the subscriptions for the email address in the URL
 		subscriptions = db.session.execute('''
-												SELECT DISTINCT *
+												SELECT DISTINCT comedian_name
 												FROM dim_subscriptions
 												WHERE unsubscribed_timestamp IS NULL
 													AND email =
