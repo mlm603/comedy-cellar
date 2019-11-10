@@ -44,18 +44,6 @@ def signup_email(email, comedian_names):
 
     upcoming_shows = DataFrame(cur.fetchall())
     upcoming_shows.columns = [desc[0] for desc in cur.description]
-
-    for comedian in comedian_names:
-        cur.execute("""
-                        INSERT INTO dim_subscriptions
-                        VALUES ('""" + email + "', '"
-                            + comedian + "', "
-                    """
-                            current_timestamp,
-                            null
-                        );
-                    """
-                    )
         
     conn.commit()
     cur.close()
