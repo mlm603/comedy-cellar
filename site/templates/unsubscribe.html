@@ -23,18 +23,22 @@
   </p>
 </div>
 
-<form>
-  <input type="checkbox" style="margin-bottom: 10px" value="all" id="all_comeds"> All Emails</input>
-  <div>Individual comedians:</div>
+{% if subscriptions %}
+  <form>
+    <input type="checkbox" style="margin-bottom: 10px" value="all" id="all_comeds"> All Emails</input>
+    <div>Individual comedians:</div>
 
-  {% for subscription in subscriptions %}
-    <div style = "padding-left: 20px">
-      <input type="checkbox" value="{{subscription.comedian_name}}" class="individ_comed"> {{subscription.comedian_name}}</input>
-    </div>
-  {% endfor %}
-  
-  <div style="margin-top: 10px; background-color: black; color: white; padding: 4px; width: 200px; height: 30px; text-align:center;" id="unsubscribe_submit">Submit Unsubscribe</div>
-</form>
+    {% for subscription in subscriptions %}
+      <div style = "padding-left: 20px">
+        <input type="checkbox" value="{{subscription.comedian_name}}" class="individ_comed"> {{subscription.comedian_name}}</input>
+      </div>
+    {% endfor %}
+    
+    <div style="margin-top: 10px; background-color: black; color: white; padding: 4px; width: 200px; height: 30px; text-align:center;" id="unsubscribe_submit">Submit Unsubscribe</div>
+  </form>
+{% else %}
+  <div>No active subscriptions found</div>
+{% endif %}
 
 </main>
 {% endblock %}
