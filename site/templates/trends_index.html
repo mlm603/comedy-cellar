@@ -27,9 +27,9 @@
     </p>
   </div>
 
-  <select id="comedian_selection">
+  <select id="comedian_selection" onChange="new_dash(this.value);">
     {% for comedian in unique_comedians %}
-      <option value="{{comedian.comedian_name}}" {% if comedian.comedian_name == 'Judah Friedlander' %} SELECTED {% endif %} onclick = "new_dash(this.value)">{{comedian.comedian_name}}</option>
+      <option value="{{comedian.comedian_name}}" {% if comedian.comedian_name == 'Judah Friedlander' %} SELECTED {% endif %}>{{comedian.comedian_name}}</option>
     {% endfor %}
   </select>
 
@@ -50,35 +50,8 @@
     </div>
   </div>
 
-  <div class = "chart_title">Shows by Day of Week</div>
+  <div class = "chart_title">Past Shows by Day of Week</div>
   <div id = "day_of_week_chart" class = "chart_container"></div>
-
-<!--   <div style = "text-align:center">
-    <div id = "test_btn" style = "background-color: red">
-      <h2 style = "color:white; margin:0px !important">TESTTEST</h2>
-    </div>
-  </div> -->
-
- <!--  <div class="tableTitle"><h2>Upcoming Shows</h2></div>
-  <div class="rTable">
-    <div class="rTableRow">
-      <div class="rTableHead">Show Date</div>
-      <div class="rTableHead">Show Time</div>
-      <div class="rTableHead">Day of Week</div>
-      <div class="rTableHead">Location</div>
-      <div class="rTableHead">Other Comedians</div>
-    </div>
-    <div>
-    {% for show in upcoming_shows %}
-    <div class="rTableRow rowtest">
-        <div class="rTableCell small_cell">{{show.show_timestamp.strftime('%m-%d')}}</div>
-        <div class="rTableCell small_cell">{{show.show_timestamp.strftime('%H:%M')}}</div>
-        <div class="rTableCell small_cell">{{show.show_day_of_week}}</div>
-        <div class="rTableCell small_cell">{{show.location}}</div>
-        <div class="rTableCell">{{show.other_comedians}}</div>
-    </div>
-    {% endfor %}
-  </div> -->
 
   <div class="tableTitle"><h2>Upcoming Shows</h2></div>
   <div class = "subtitle" id = "no_upcoming_shows"> No Upcoming Shows </div>
