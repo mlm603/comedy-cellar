@@ -18,3 +18,4 @@ dim_subscriptions
 /site/.DS_Store
 /var
 /comedy-cellar-data
+/site/__pycache__

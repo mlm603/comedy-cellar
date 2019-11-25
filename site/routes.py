@@ -10,6 +10,9 @@ import pytz
 import json
 import os
 from signups import signup_email
+import logging
+import json_log_formatter
+import sys
 
 app = Flask(__name__)
 
@@ -31,6 +34,14 @@ db = SQLAlchemy(app)
 # ---------------
 
 db.init_app(app)
+
+formatter = json_log_formatter.JSONFormatter()
+json_handler = logging.StreamHandler(sys.stdout)
+json_handler.setFormatter(formatter)
+
+logger = logging.getLogger(__name__)
+logger.addHandler(json_handler)
+logger.setLevel(logging.INFO)
 
 frequent_comedians = db.session.execute('''
 											SELECT comedian_name
@@ -107,6 +118,7 @@ def index():
 		subscription = request.get_json()
 		email = subscription['email']
 		comedians = subscription['comedians']
+		logger.info('%s added a new subscription!', email, extra={'email': email, 'subscription_type': 'new'})
 		for comedian_name in comedians:
 			statement = "INSERT INTO dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')"
 			db.session.execute(statement)
@@ -134,6 +146,7 @@ def unsubscribe():
 		unsubscribe_comeds = request.get_json()
 		email = unsubscribe_comeds['email']
 		comedians = unsubscribe_comeds['comedians']
+		logger.info('%s unsubscribed', email, extra={'email': email, 'subscription_type': 'unsubscribe'})
 		for comedian_name in comedians:
 			statement = "UPDATE dim_subscriptions SET unsubscribed_timestamp = '" + unsubscribed_timestamp + "' WHERE email = '" + email + "' AND comedian_name = '" + comedian_name + "'; "
 			print(statement)
