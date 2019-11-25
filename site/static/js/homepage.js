@@ -2,6 +2,9 @@ const w = 500;
 const h = 300;
 const padding = 20;
 
+$("#total_comedians").text(total_comedians[0]["total_comedians"]);
+$("#total_upcoming_shows").text(total_upcoming_shows[0]["total_upcoming_shows"]);
+
 function make_top10_bar_chart(div, dataset, axis_values, fill_color, font_color){
 // Generates chart of top 10 comedians based on selected dataset
 
@@ -38,6 +41,3 @@ function make_top10_bar_chart(div, dataset, axis_values, fill_color, font_color)
 
 // generate chart of top 10 comedians by number of shows
 make_top10_bar_chart(div = "#top_comedians", dataset = frequent_comedians, axis_values = "show_count", fill_color = "#4f2d7f", font_color = "white")
-
-// generate chart of top 10 comedians by number of days since last show
-make_top10_bar_chart(div = "#dry_spells", dataset = dry_spell_comedians, axis_values = "days_since_last_show", fill_color = "#62bad4", font_color = "black")

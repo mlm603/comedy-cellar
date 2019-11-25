@@ -57,16 +57,6 @@ unique_comedians = db.session.execute('''
 											ORDER BY comedian_name ASC		
 										''')
 
-dry_spell_comedians = db.session.execute('''
-											SELECT comedian_name
-											  , last_show
-											  , days_since_last_show
-											FROM dim_comedian_stats
-											WHERE comedian_name <> 'MORE TO BE ANNOUNCED'
-											ORDER BY 3 desc
-											LIMIT 10
-										''')
-
 summary_stats = db.session.execute('''
 											SELECT comedian_name
 												, previous_shows
@@ -87,6 +77,16 @@ upcoming_shows = db.session.execute('''
 											FROM dim_upcoming_shows
 										''')
 
+total_comedians = db.session.execute('''
+											SELECT COUNT(DISTINCT comedian_name) AS total_comedians
+											FROM dim_comedian_stats
+										''')
+
+total_upcoming_shows = db.session.execute('''
+											SELECT COUNT(DISTINCT showtime_id) AS total_upcoming_shows
+											FROM dim_upcoming_shows
+										''')
+
 
 # frequent_comedians_results = []
 
@@ -103,13 +103,15 @@ frequent_comedians_results = make_dict(frequent_comedians)
 
 unique_comedians_results = make_dict(unique_comedians)
 
-dry_spell_comedians = make_dict(dry_spell_comedians)
-
 summary_stats = make_dict(summary_stats)
 
 day_of_week_stats = make_dict(day_of_week_stats)
 
 upcoming_shows = make_dict(upcoming_shows)
+
+total_comedians = make_dict(total_comedians)
+
+total_upcoming_shows = make_dict(total_upcoming_shows)
 
 @app.route('/', methods=['GET','POST'])
 def index():
@@ -127,7 +129,8 @@ def index():
 	return render_template('home_page_index.html'
 						, frequent_comedians=frequent_comedians_results
 						, unique_comedians=unique_comedians_results
-						, dry_spell_comedians=dry_spell_comedians
+						, total_comedians=total_comedians
+						, total_upcoming_shows=total_upcoming_shows
 				)
 
 @app.route('/trends', methods=['GET'])

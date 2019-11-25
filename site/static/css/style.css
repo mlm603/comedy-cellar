@@ -9,6 +9,7 @@ main {
     display: inline-block;
     margin-left: 1%;
     width: 48%;
+    vertical-align: top;
   }
   .single_value {
     display: inline-block;
@@ -64,6 +65,21 @@ main {
   .single_value_value {
     font-size: 60px;
   }
+}
+
+.main_page_graph div {
+  text-align: center;
+  margin: 5% 0 10% 0;
+}
+
+.main_page_single_val {
+  color: #4f2d7f;
+  font-size: 100px;
+}
+
+.single_val_subtitle {
+  color: rgba(0,0,0,0.6);
+  font-size: 25px;\
 }
 
 .subtitle {
