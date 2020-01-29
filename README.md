@@ -6,6 +6,8 @@
 
 [System Overview](#system-overview)
 
+[Monitoring](#monitoring)
+
 [Additional Links](#additional-links)
 
 # Project Background
@@ -32,6 +34,23 @@ Each night when the script runs (7pm ET), if there are any new shows added for t
 # System Overview
 
 ![system diagram](https://github.com/mlm603/comedy-cellar/blob/master/pictures/system_diagram_updated.png)
+
+# Monitoring
+
+Logs are sent to Datadog. 
+
+For the nightly scraping/emailing process, logs are sent if a comedian name exceeds 50 characters, when the scraping is complete, when data is successfully loaded into each local and remote table, and when each email is sent. These logs are used in a dashboard.
+
+![scraper_datadog_dashboard](https://github.com/mlm603/comedy-cellar/blob/master/pictures/scraper_datadog_dashboard.png)
+
+The website sends heroku system logs and special logs when a user adds a subscription or unsubscribes.
+
+![site_datadog_dashboard](https://github.com/mlm603/comedy-cellar/blob/master/pictures/site_datadog_dashboard.png)
+
+I also set up email alerts so that I will be notified if the scraper has not run in 24 hours or generated an error log (or when there's a new subscriber, on a more positive note).
+
+![monitors](https://github.com/mlm603/comedy-cellar/blob/master/pictures/monitors.png)
+
 
 # Additional links
 
