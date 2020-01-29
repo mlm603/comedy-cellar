@@ -56,6 +56,4 @@ I also set up email alerts so that I will be notified if the scraper has not run
 
 [Original project outline](https://docs.google.com/document/d/1y4zlj_LR3HZ_MzT7Rh7jvh73xsZhqj8Ez5qk92yTCfk/edit#)
 
-[fact_shows Gsheet (full history of scrapes)](https://docs.google.com/spreadsheets/d/1O--GtBmFah95c1tYfiPkFA8ToFgl6OawjUmibvv06Xk/edit#gid=0)
-
 [Steps and SQL](https://github.com/mlm603/comedy-cellar/blob/master/steps_and_sql.md)
