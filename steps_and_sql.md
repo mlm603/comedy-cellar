@@ -2,7 +2,7 @@
 
 [Postgres](#postgres)
 
-[Launchd (scheduling)](#launchd-(scheduling))
+[Launchd (scheduling)](#launchd-scheduling)
 
 [Website hosting](#website-hosting)
 
