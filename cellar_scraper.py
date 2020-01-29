@@ -57,6 +57,9 @@ cc_url = 'https://www.comedycellar.com/line-up/'
 #use selenium/geckodriver to open chrome
 browser = webdriver.Chrome()
 
+# phrases captured as comedian_names to exclude from results
+comedian_name_blacklist = ["MORE TO BE ANNOUNCED", "All Proceeds Of This Show go to: The Bronx Freedom Fund"]
+
 try:
     #navigate to url
     browser.get(cc_url)
@@ -124,29 +127,33 @@ try:
                     else:
                         comedian_name = raw_name.lstrip().replace("\t", "")
                         is_mc = False
-                raw_comedian = comedian.text
-                start_description = raw_comedian.find(comedian_name) + len(comedian_name)
-                raw_comedian_description = raw_comedian[start_description:].lstrip()
-                if 'View Website' in raw_comedian_description:
-                    comedian_description = raw_comedian_description[:-13].lstrip().replace("\t", "")
-                else:
-                    comedian_description = raw_comedian_description.lstrip().replace("\t", "")
+                if comedian_name not in comedian_name_blacklist:
+                    if len(comedian_name) > 50:
+                        logger.info("long comedian name: " + comedian_name, extra={'status': 'Error'})
+                        comedian_name = comedian_name[:50]
+                    raw_comedian = comedian.text
+                    start_description = raw_comedian.find(comedian_name) + len(comedian_name)
+                    raw_comedian_description = raw_comedian[start_description:].lstrip()
+                    if 'View Website' in raw_comedian_description:
+                        comedian_description = raw_comedian_description[:-13].lstrip().replace("\t", "")
+                    else:
+                        comedian_description = raw_comedian_description.lstrip().replace("\t", "")
 
-                comedian_description = comedian_description[:255]
-                
-                comedian_value = [
-                                    showtime_id
-                                    , snapshot_timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
-                                    , show_day_of_week
-                                    , show_timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
-                                    , location
-                                    , is_mc
-                                    , comedian_name
-                                    , comedian_description
-                                    , True #is_most_recent_timestamp should always be true when this runs
-                                ]
+                    comedian_description = comedian_description[:255]
+                    
+                    comedian_value = [
+                                        showtime_id
+                                        , snapshot_timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+                                        , show_day_of_week
+                                        , show_timestamp.strftime('%Y-%m-%d %H:%M:%S.%f')
+                                        , location
+                                        , is_mc
+                                        , comedian_name
+                                        , comedian_description
+                                        , True #is_most_recent_timestamp should always be true when this runs
+                                    ]
 
-                new_values.append(comedian_value) 
+                    new_values.append(comedian_value) 
 
     logger.info("Finished scraping shows")
 
