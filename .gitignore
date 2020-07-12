@@ -19,3 +19,4 @@ dim_subscriptions
 /var
 /comedy-cellar-data
 /site/__pycache__
+/site/templates/datadog_rum.html
