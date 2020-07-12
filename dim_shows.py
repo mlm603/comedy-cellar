@@ -48,26 +48,38 @@ def dim_shows(snapshot_date_string):
     Internal function to generate new [dim_table]
     """
     def update_dim_table(table_name, df_or_query, write_to_heroku = False):
+        # function can take in either a dataframe or SQL query
+        # if it's a dataframe, no transformation is necessary
         if isinstance(df_or_query, pd.DataFrame):
             table = df_or_query
+        # if it's a query, we need to execute it locally to create a dataframe
         else:
             local_cursor.execute(df_or_query)
             table = DataFrame(local_cursor.fetchall())
             table.columns = [desc[0] for desc in local_cursor.description]
 
+        # dim tables are fully replaced every run. This command removes the old data.
         local_cursor.execute("TRUNCATE TABLE " + table_name + ";")
 
+        # save a CSV with the new table's data in the proper location
         new_filename = table_name + "/" + snapshot_date_string + '.csv'
         table.to_csv(new_filename, index = False, header = False)
+        
+        # copy data from CSV to local postgres table
         sys.stdin = open(new_filename)
         local_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
         logger.info('updated table ' + table_name + ' locally')
 
+        # writing to Heroku is optional and based on a function parameter
         if write_to_heroku:
+            # remove the old data from the Heroku copy of the table
             heroku_cursor.execute("TRUNCATE TABLE " + table_name + ";")
+            
+            # copy data from the CSV to the Heroku copy of the table
             sys.stdin = open(new_filename)
             heroku_cursor.copy_expert("COPY " + table_name + " FROM STDIN WITH (FORMAT CSV)", sys.stdin)
+            
             logger.info('updated table ' + table_name + ' on heroku')
 
     # Get existing dim_shows table to determine adds/removals

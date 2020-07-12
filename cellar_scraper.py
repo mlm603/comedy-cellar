@@ -58,7 +58,7 @@ cc_url = 'https://www.comedycellar.com/line-up/'
 browser = webdriver.Chrome()
 
 # phrases captured as comedian_names to exclude from results
-comedian_name_blacklist = ["MORE TO BE ANNOUNCED", "All Proceeds Of This Show go to: The Bronx Freedom Fund"]
+comedian_name_blacklist = ["MORE TO BE ANNOUNCED", "All Proceeds Of This Show go to: The Bronx Freedom Fund", "This Week At The Comedy Cellar"]
 
 try:
     #navigate to url
@@ -183,8 +183,11 @@ try:
 
     new_values_df = pd.DataFrame(new_values, columns=['showtime_id', 'snapshot_timestamp', 'show_day_of_week', 'show_timestamp', 'location', 'is_mc', 'comedian_name', 'comedian_description', 'is_most_recent_snapshot'])
 
+    # store the scraped data in a CSV with the current date in the file name
     new_filename = 'fact_shows/' + snapshot_date_string + '.csv'
     new_values_df.to_csv(new_filename, index = False, header = False)
+    
+    # copy the CSV to the local fact_shows table
     sys.stdin = open(new_filename)
     local_cursor.copy_expert("COPY fact_shows FROM STDIN WITH (FORMAT CSV)", sys.stdin)
 
