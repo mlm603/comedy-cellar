@@ -5,6 +5,7 @@ import pytz
 import logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -54,8 +55,9 @@ logging.basicConfig(filename='cellar_scraper.log',level=logging.DEBUG)
 #set url
 cc_url = 'https://www.comedycellar.com/line-up/'
 
-#use selenium/geckodriver to open chrome
-browser = webdriver.Chrome()
+# use selenium/geckodriver to open chrome
+# ChromeDriverManager makes sure latest chromedriver is used
+browser = webdriver.Chrome(ChromeDriverManager().install())
 
 # phrases captured as comedian_names to exclude from results
 comedian_name_blacklist = ["MORE TO BE ANNOUNCED", "All Proceeds Of This Show go to: The Bronx Freedom Fund", "This Week At The Comedy Cellar"]
