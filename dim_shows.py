@@ -93,7 +93,8 @@ def dim_shows(snapshot_date_string):
                     WHERE show_timestamp >= (current_timestamp at time zone 'EST')::date;
                 """)
     dim_shows_old = DataFrame(local_cursor.fetchall())
-    dim_shows_old.columns = [desc[0] for desc in local_cursor.description]
+    if len(dim_shows_old) > 0:
+        dim_shows_old.columns = [desc[0] for desc in local_cursor.description]
 
     """
     Get most recent snapshot from fact_shows
@@ -253,26 +254,40 @@ def trigger_emails(dim_shows_old, dim_shows_new, active_subscriptions):
 
     service = build('gmail', 'v1', credentials=creds)
 
-
+    if len(dim_shows_old) > 0:
     # merge old and new dim_shows tables to determine adds/drops
-    deltasDF = dim_shows_old.merge(
-                                    dim_shows_new
-                                    , left_on = ['showtime_id_old', 'comedian_name_old']
-                                    , right_on = ['showtime_id', 'comedian_name']
-                                    , how = 'outer'
-                                )
+        deltasDF = dim_shows_old.merge(
+                                        dim_shows_new
+                                        , left_on = ['showtime_id_old', 'comedian_name_old']
+                                        , right_on = ['showtime_id', 'comedian_name']
+                                        , how = 'outer'
+                                    )
 
-    # coalesce old/new columns and clean up table
-    deltasDF['comedian_show_status'] = np.NaN
-    deltasDF['comedian_show_status'][deltasDF.showtime_id_old.isnull()] = 'added'
-    deltasDF['comedian_show_status'][deltasDF.showtime_id.isnull()] = 'removed'
-    deltasDF['showtime_id_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.showtime_id, deltasDF.showtime_id_old)
-    deltasDF['comedian_name_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.comedian_name, deltasDF.comedian_name_old)
-    deltasDF['location_clean'] = np.where(deltasDF.location_old.isnull(), deltasDF.location, deltasDF.location_old)
-    deltasDF['show_timestamp_clean'] = pd.to_datetime(np.where(deltasDF.show_timestamp_old.isnull(), deltasDF.show_timestamp, deltasDF.show_timestamp_old))
-    deltasDF['show_day_of_week_clean'] = np.where(deltasDF.show_day_of_week_old.isnull(), deltasDF.show_day_of_week, deltasDF.show_day_of_week_old)
-    deltasDF = deltasDF[['showtime_id_clean', 'comedian_name_clean', 'location_clean', 'show_timestamp_clean', 'show_day_of_week_clean', 'comedian_show_status']]
-    deltasDF.columns = ['showtime_id', 'comedian_name_temp', 'location', 'show_timestamp', 'show_day_of_week', 'comedian_show_status']
+        # coalesce old/new columns and clean up table
+        deltasDF['comedian_show_status'] = np.NaN
+        deltasDF['comedian_show_status'][deltasDF.showtime_id_old.isnull()] = 'added'
+        deltasDF['comedian_show_status'][deltasDF.showtime_id.isnull()] = 'removed'
+        deltasDF['showtime_id_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.showtime_id, deltasDF.showtime_id_old)
+        deltasDF['comedian_name_clean'] = np.where(deltasDF.showtime_id_old.isnull(), deltasDF.comedian_name, deltasDF.comedian_name_old)
+        deltasDF['location_clean'] = np.where(deltasDF.location_old.isnull(), deltasDF.location, deltasDF.location_old)
+        deltasDF['show_timestamp_clean'] = pd.to_datetime(np.where(deltasDF.show_timestamp_old.isnull(), deltasDF.show_timestamp, deltasDF.show_timestamp_old))
+        deltasDF['show_day_of_week_clean'] = np.where(deltasDF.show_day_of_week_old.isnull(), deltasDF.show_day_of_week, deltasDF.show_day_of_week_old)
+        deltasDF = deltasDF[['showtime_id_clean', 'comedian_name_clean', 'location_clean', 'show_timestamp_clean', 'show_day_of_week_clean', 'comedian_show_status']]
+        deltasDF.columns = ['showtime_id', 'comedian_name_temp', 'location', 'show_timestamp', 'show_day_of_week', 'comedian_show_status']
+
+    else:
+    # in case there was no old record of future shows, we just use the new shows list
+        deltasDF = dim_shows_new
+
+        deltasDF['comedian_show_status'] = np.NaN
+        deltasDF['comedian_show_status'] = 'added'
+        deltasDF['showtime_id_clean'] = dim_shows_new.showtime_id
+        deltasDF['comedian_name_clean'] = dim_shows_new.comedian_name
+        deltasDF['location_clean'] = dim_shows_new.location
+        deltasDF['show_timestamp_clean'] = pd.to_datetime(dim_shows_new.show_timestamp)
+        deltasDF['show_day_of_week_clean'] = dim_shows_new.show_day_of_week
+        deltasDF = deltasDF[['showtime_id_clean', 'comedian_name_clean', 'location_clean', 'show_timestamp_clean', 'show_day_of_week_clean', 'comedian_show_status']]
+        deltasDF.columns = ['showtime_id', 'comedian_name_temp', 'location', 'show_timestamp', 'show_day_of_week', 'comedian_show_status']
     
     # merge deltas with subscriptions to determine what alerts need to be sent
     triggered_emailsDF = active_subscriptions.merge(
