@@ -1,18 +1,15 @@
-from flask import Flask, render_template, redirect, url_for, request, session, flash
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
-import os
-import sqlalchemy
-from sqlalchemy import create_engine, MetaData, select, Table
-from flask import jsonify
-from datetime import datetime
-import pytz
 import json
-import os
-from signups import signup_email
-import logging
 import json_log_formatter
+import logging
+import os
+import pytz
 import sys
+
+from datetime import datetime
+from flask import Flask, jsonify, render_template, redirect, url_for, request, session, flash
+from flask_sqlalchemy import SQLAlchemy
+
+from signups import signup_email
 
 app = Flask(__name__)
 
@@ -24,7 +21,7 @@ if os.environ['FLASK_ENVIRONMENT'] == 'development':
 	app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/cellar_scraper'
 else:
 	print("Using heroku PSQL db")
-	app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL = os.environ['DATABASE_URL']
+	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False;
 
