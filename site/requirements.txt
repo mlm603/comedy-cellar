@@ -7,7 +7,7 @@ configparser==4.0.2
 contextlib2==0.6.0.post1
 Flask==1.1.4
 Flask-SQLAlchemy==2.5.1
-httplib2==0.13.0
+httplib2==0.19.0
 importlib-metadata==2.1.2
 itsdangerous==1.1.0
 Jinja2==2.11.3
