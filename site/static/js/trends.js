@@ -143,5 +143,5 @@ function new_dash(comedian_name){
   populate_dash(comedian_name)
 }
 
-$('[id=comedian_selection]').val( 'Judah Friedlander' )
-populate_dash('Judah Friedlander')
+$('[id=comedian_selection]').val( 'Greer Barnes' )
+populate_dash('Greer Barnes')
