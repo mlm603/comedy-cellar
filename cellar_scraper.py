@@ -170,8 +170,8 @@ try:
     fact_shows_old = DataFrame(local_cursor.fetchall())
     fact_shows_old.columns = [desc[0] for desc in local_cursor.description]
 
-    #where existing is_most_recent_timestamp is TRUE and showtime_id is in showtime_ids
-    #set is_most_recent_timestamp to TRUE
+    #where existing showtime_id is in showtime_ids
+    #set is_most_recent_snapshot to FALSE
 
     showtime_ids = "', '".join(showtime_ids)
 
