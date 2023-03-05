@@ -60,7 +60,7 @@ cc_url = 'https://www.comedycellar.com/line-up/'
 browser = webdriver.Chrome(ChromeDriverManager().install())
 
 # phrases captured as comedian_names to exclude from results
-comedian_name_blacklist = ["MORE TO BE ANNOUNCED", "All Proceeds Of This Show go to: The Bronx Freedom Fund", "This Week At The Comedy Cellar"]
+comedian_name_blacklist = ["MORE TO BE ANNOUNCED", "All Proceeds Of This Show go to: The Bronx Freedom Fund", "This Week At The Comedy Cellar", "Comedians From the Seth Meyers Show with Ryan Reiss"]
 
 try:
     #navigate to url
