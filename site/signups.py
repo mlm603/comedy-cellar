@@ -35,15 +35,15 @@ def signup_email(email, comedian_names):
                         , location
                         , show_timestamp::varchar(255)
                         , show_day_of_week
-                    FROM dim_upcoming_shows
+                    FROM comedy_cellar.dim_upcoming_shows
                     WHERE comedian_name IN (""" + comedian_names_string + ")"
                 + """
                         AND show_timestamp>=current_date;
                 """
                 )
-
     upcoming_shows = DataFrame(cur.fetchall())
-    upcoming_shows.columns = [desc[0] for desc in cur.description]
+    if not upcoming_shows.empty:
+        upcoming_shows.columns = [desc[0] for desc in cur.description]
         
     conn.commit()
     cur.close()
@@ -82,19 +82,20 @@ def signup_email(email, comedian_names):
 
     service = build('gmail', 'v1', credentials=creds)
 
-    message = """Thanks for subscribing to Cellar Scraper alerts!
-                Here are the upcoming shows featuring your favorite comedians:"""
-
-    comedians = upcoming_shows.comedian_name.unique()
-    for comedian in comedians:
-        shows = upcoming_shows.loc[upcoming_shows['comedian_name'] == comedian]
-        message += ('<br/><br/><b>' + comedian + '</b> is scheduled to be at the following shows:')
-        for index, row in shows.iterrows():
-            message += (
-                        '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
-                        datetime.datetime.strptime(row['show_timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%B %d %H:%M')
-                        + ' at ' + row['location']
-                        )
+    message = "Thanks for subscribing to Cellar Scraper alerts!"
+    if upcoming_shows.empty:
+        message += ("The comedians you are following do not have any upcoming shows at the Cellar right now, but you'll get an email whenever they are added to a new show.")
+    else:
+        comedians = upcoming_shows.comedian_name.unique()
+        for comedian in comedians:
+            shows = upcoming_shows.loc[upcoming_shows['comedian_name'] == comedian]
+            message += ('Here are the upcoming shows featuring your favorite comedians:<br/><br/><b>' + comedian + '</b> is scheduled to be at the following shows:')
+            for index, row in shows.iterrows():
+                message += (
+                            '<br/>&emsp;' + row['show_day_of_week'] + ', ' +
+                            datetime.datetime.strptime(row['show_timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%B %d %H:%M')
+                            + ' at ' + row['location']
+                            )
 
     message += '<br/><br/></br>Click <a href="www.cellarscraper.com/unsubscribe?email=' + email + '">here</a> to unsubscribe from all emails or specific comedians'
     message = MIMEText(message, 'html')

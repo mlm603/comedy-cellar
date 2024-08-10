@@ -47,14 +47,14 @@ with app.app_context():
 	frequent_comedians = db.session.execute(text('''
 												SELECT comedian_name
 													, show_count
-												FROM dim_comedian_stats
+												FROM comedy_cellar.dim_comedian_stats
 												ORDER BY show_count DESC
 												LIMIT 10				
 											'''))
 
 	unique_comedians = db.session.execute(text('''
 												SELECT DISTINCT comedian_name
-												FROM dim_comedian_stats
+												FROM comedy_cellar.dim_comedian_stats
 												ORDER BY comedian_name ASC		
 											'''))
 
@@ -63,29 +63,29 @@ with app.app_context():
 													, previous_shows
 													, upcoming_shows
 													, most_recent_show_timestamp
-												FROM dim_comedian_stats
+												FROM comedy_cellar.dim_comedian_stats
 											'''))
 
 	day_of_week_stats = db.session.execute(text('''
 												SELECT comedian_name
 													, show_day_of_week
 													, show_count
-												FROM dim_comedian_dow_stats
+												FROM comedy_cellar.dim_comedian_dow_stats
 											'''))
 
 	upcoming_shows = db.session.execute(text('''
 												SELECT *
-												FROM dim_upcoming_shows
+												FROM comedy_cellar.dim_upcoming_shows
 											'''))
 
 	total_comedians = db.session.execute(text('''
 												SELECT COUNT(DISTINCT comedian_name) AS total_comedians
-												FROM dim_comedian_stats
+												FROM comedy_cellar.dim_comedian_stats
 											'''))
 
 	total_upcoming_shows = db.session.execute(text('''
 												SELECT COUNT(DISTINCT showtime_id) AS total_upcoming_shows
-												FROM dim_upcoming_shows
+												FROM comedy_cellar.dim_upcoming_shows
 											'''))
 
 
@@ -122,7 +122,7 @@ with app.app_context():
 			comedians = subscription['comedians']
 			logger.info('%s added a new subscription!', email, extra={'email': email, 'subscription_type': 'new'})
 			for comedian_name in comedians:
-				statement = "INSERT INTO dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')"
+				statement = text("INSERT INTO comedy_cellar.dim_subscriptions VALUES('" + email + "', '" + comedian_name + "', '" + signup_timestamp + "')")
 				db.session.execute(statement)
 				db.session.commit()
 			signup_email(email, comedians)
@@ -151,7 +151,7 @@ with app.app_context():
 			comedians = unsubscribe_comeds['comedians']
 			logger.info('%s unsubscribed', email, extra={'email': email, 'subscription_type': 'unsubscribe'})
 			for comedian_name in comedians:
-				statement = "UPDATE dim_subscriptions SET unsubscribed_timestamp = '" + unsubscribed_timestamp + "' WHERE email = '" + email + "' AND comedian_name = '" + comedian_name + "'; "
+				statement = "UPDATE comedy_cellar.dim_subscriptions SET unsubscribed_timestamp = '" + unsubscribed_timestamp + "' WHERE email = '" + email + "' AND comedian_name = '" + comedian_name + "'; "
 				print(statement)
 				db.session.execute(statement)
 				db.session.commit()
@@ -161,7 +161,7 @@ with app.app_context():
 			# gets the subscriptions for the email address in the URL
 			subscriptions = db.session.execute('''
 													SELECT DISTINCT comedian_name
-													FROM dim_subscriptions
+													FROM comedy_cellar.dim_subscriptions
 													WHERE unsubscribed_timestamp IS NULL
 														AND email =
 												'''
