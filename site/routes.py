@@ -44,6 +44,9 @@ with app.app_context():
 	logger.addHandler(json_handler)
 	logger.setLevel(logging.INFO)
 
+	logger.warn("testing")
+	logger.warn(os.environ['DATABASE_URL'])
+
 	frequent_comedians = db.session.execute(text('''
 												SELECT comedian_name
 													, show_count
