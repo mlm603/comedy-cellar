@@ -84,7 +84,7 @@ def signup_email(email, comedian_names):
 
     message = "Thanks for subscribing to Cellar Scraper alerts!"
     if upcoming_shows.empty:
-        message += ("The comedians you are following do not have any upcoming shows at the Cellar right now, but you'll get an email whenever they are added to a new show.")
+        message += (" The comedians you are following do not have any upcoming shows at the Cellar right now, but you'll get an email whenever they are added to a new show.")
     else:
         comedians = upcoming_shows.comedian_name.unique()
         for comedian in comedians:
